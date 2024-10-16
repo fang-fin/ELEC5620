@@ -6,7 +6,7 @@ import ProjectManagement from './ProjectManagement';
 import TeamManagement from './TeamManagement';
 import AISecretary from './AISecretary';
 
-function ChatInterface() {
+function ChatInterface({ setIsLoggedIn }) {
   const [selectedFunction, setSelectedFunction] = useState('ai-secretary');
 
   const renderContent = () => {
@@ -29,7 +29,7 @@ function ChatInterface() {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      <Sidebar setSelectedFunction={setSelectedFunction} />
+      <Sidebar setSelectedFunction={setSelectedFunction} setIsLoggedIn={setIsLoggedIn} />
       <div className="flex flex-col flex-grow">
         <div className="flex-grow overflow-auto p-6">
           {renderContent()}
