@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Login({ setIsLoggedIn }) {
+function Login({ setIsLoggedIn, setUserRole }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ function Login({ setIsLoggedIn }) {
     e.preventDefault();
     // 这里应该有实际的登录逻辑
     setIsLoggedIn(true);
+    setUserRole('manager'); // 假设所有用户都是管理员
     navigate('/chat');
   };
 
