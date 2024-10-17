@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import Login from './components/Login';
 import ChatInterface from './components/ChatInterface';
 import EmployeeInterface from './components/EmployeeInterface';
+import HRInterface from './components/HRInterface';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -18,7 +19,9 @@ function App() {
             element={
               isLoggedIn 
                 ? (userRole === 'manager' 
-                    ? <ChatInterface setIsLoggedIn={setIsLoggedIn} userRole={userRole} /> 
+                    ? <ChatInterface setIsLoggedIn={setIsLoggedIn} userRole={userRole} />
+                    : userRole === 'hr'
+                    ? <HRInterface setIsLoggedIn={setIsLoggedIn} userRole={userRole} />
                     : <EmployeeInterface setIsLoggedIn={setIsLoggedIn} userRole={userRole} />)
                 : <Navigate to="/login" />
             } 

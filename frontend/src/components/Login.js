@@ -12,6 +12,8 @@ function Login({ setIsLoggedIn, setUserRole }) {
     setIsLoggedIn(true);
     if (username.toLowerCase() === 'manager') {
       setUserRole('manager');
+    } else if (username.toLowerCase() === 'hr') {
+      setUserRole('hr');
     } else {
       setUserRole('employee');
     }

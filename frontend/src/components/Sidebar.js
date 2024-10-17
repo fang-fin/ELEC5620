@@ -83,14 +83,59 @@ function Sidebar({ setSelectedFunction, setIsLoggedIn, userRole }) {
     </>
   );
 
+  const renderHROptions = () => (
+    <>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('employee-management')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Employee Management
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('advice-box')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Advice Box
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('time-analysis')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Time Analysis
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('mental-health-monitor')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Mental Health Monitor
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('payroll-evaluation')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Payroll Evaluation
+        </button>
+      </li>
+    </>
+  );
+
   return (
     <div className="w-64 bg-white shadow-md flex flex-col h-full">
       <div className="p-4 flex-grow">
         <h2 className="text-xl font-bold text-gray-800 mb-4">
-          {userRole === 'manager' ? 'Manager Dashboard' : 'Employee Dashboard'}
+          {userRole === 'manager' ? 'Manager Dashboard' : userRole === 'hr' ? 'HR Dashboard' : 'Employee Dashboard'}
         </h2>
         <ul>
-          {userRole === 'manager' ? renderManagerOptions() : renderEmployeeOptions()}
+          {userRole === 'manager' ? renderManagerOptions() : userRole === 'hr' ? renderHROptions() : renderEmployeeOptions()}
         </ul>
       </div>
       <div className="p-4">
