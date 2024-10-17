@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-function Sidebar({ setSelectedFunction, setIsLoggedIn }) {
+function Sidebar({ setSelectedFunction, setIsLoggedIn, userRole }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -9,35 +9,88 @@ function Sidebar({ setSelectedFunction, setIsLoggedIn }) {
     navigate('/login');
   };
 
+  const renderManagerOptions = () => (
+    <>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('manage-projects')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Manage Projects
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('manage-team')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Manage Team
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('ai-secretary')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          AI Secretary
+        </button>
+      </li>
+    </>
+  );
+
+  const renderEmployeeOptions = () => (
+    <>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('financial-report')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Financial Report
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('psychological-assessment')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Psychological Self-Assessment
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('feedback')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Feedback
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('clock-in')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Clock-In
+        </button>
+      </li>
+      <li className="mb-2">
+        <button
+          onClick={() => setSelectedFunction('personal-savings-assistant')}
+          className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
+        >
+          Personal Savings Assistant
+        </button>
+      </li>
+    </>
+  );
+
   return (
     <div className="w-64 bg-white shadow-md flex flex-col h-full">
       <div className="p-4 flex-grow">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Manager Dashboard</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-4">
+          {userRole === 'manager' ? 'Manager Dashboard' : 'Employee Dashboard'}
+        </h2>
         <ul>
-          <li className="mb-2">
-            <button
-              onClick={() => setSelectedFunction('manage-projects')}
-              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
-            >
-              Manage Projects
-            </button>
-          </li>
-          <li className="mb-2">
-            <button
-              onClick={() => setSelectedFunction('manage-team')}
-              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
-            >
-              Manage Team
-            </button>
-          </li>
-          <li className="mb-2">
-            <button
-              onClick={() => setSelectedFunction('ai-secretary')}
-              className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-500 hover:text-white rounded transition-colors"
-            >
-              AI Secretary
-            </button>
-          </li>
+          {userRole === 'manager' ? renderManagerOptions() : renderEmployeeOptions()}
         </ul>
       </div>
       <div className="p-4">

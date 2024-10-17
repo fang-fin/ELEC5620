@@ -10,14 +10,18 @@ function Login({ setIsLoggedIn, setUserRole }) {
     e.preventDefault();
     // 这里应该有实际的登录逻辑
     setIsLoggedIn(true);
-    setUserRole('manager'); // 假设所有用户都是管理员
+    if (username.toLowerCase() === 'manager') {
+      setUserRole('manager');
+    } else {
+      setUserRole('employee');
+    }
     navigate('/chat');
   };
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="p-10 bg-white rounded-lg shadow-xl">
-        <h1 className="text-2xl font-bold mb-5">Login to Company Assistant</h1>
+        <h1 className="text-2xl font-bold mb-5">Login to Arasaka Company Assistant</h1>
         <input
           type="text"
           placeholder="Username"
