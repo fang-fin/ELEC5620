@@ -1,14 +1,8 @@
 import React from 'react';
-import MessageList from './MessageList';
-import InputArea from './InputArea';
+import ChatInterface from './ChatInterface';
 
 function MentalHealthMonitor() {
-  return (
-    <div className="flex flex-col h-full">
-      <MessageList />
-      <InputArea />
-    </div>
-  );
+  return <ChatInterface title="Mental Health Monitor" />;
 }
 
 export default MentalHealthMonitor;

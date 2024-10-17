@@ -1,33 +1,28 @@
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import ProjectManagement from './ProjectManagement';
-import TeamManagement from './TeamManagement';
-import AISecretary from './AISecretary';
+import MessageList from './MessageList';
+import InputArea from './InputArea';
 
-function ChatInterface({ setIsLoggedIn }) {
-  const [selectedFunction, setSelectedFunction] = useState('ai-secretary');
+function ChatInterface({ title }) {
+  const [messages, setMessages] = useState([]);
 
-  const renderContent = () => {
-    switch (selectedFunction) {
-      case 'manage-projects':
-        return <ProjectManagement />;
-      case 'manage-team':
-        return <TeamManagement />;
-      case 'ai-secretary':
-        return <AISecretary />;
-      default:
-        return <div>Select a function</div>;
-    }
+  const handleSendMessage = (message) => {
+    // 添加用户消息
+    setMessages([...messages, { text: message, isUser: true }]);
+
+    // 这里是AI回答的接口
+    // 在实际应用中，这里应该调用后端API
+    setTimeout(() => {
+      setMessages(prevMessages => [...prevMessages, { text: `AI response to: ${message}`, isUser: false }]);
+    }, 1000);
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar setSelectedFunction={setSelectedFunction} setIsLoggedIn={setIsLoggedIn} userRole="manager" />
-      <div className="flex flex-col flex-grow">
-        <div className="flex-grow overflow-auto p-6">
-          {renderContent()}
-        </div>
+    <div className="flex flex-col h-full bg-white shadow-md rounded-lg">
+      <div className="bg-blue-500 text-white p-4 rounded-t-lg">
+        <h2 className="text-xl font-bold">{title}</h2>
       </div>
+      <MessageList messages={messages} />
+      <InputArea onSendMessage={handleSendMessage} />
     </div>
   );
 }

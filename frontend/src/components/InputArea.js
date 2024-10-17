@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 
-function InputArea() {
+function InputArea({ onSendMessage }) {
   const [input, setInput] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // 这里应该有发送消息的逻辑
-    console.log("Sending message:", input);
-    setInput('');
+    if (input.trim()) {
+      onSendMessage(input);
+      setInput('');
+    }
   };
 
   return (

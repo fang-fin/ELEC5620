@@ -1,14 +1,8 @@
 import React from 'react';
-import MessageList from './MessageList';
-import InputArea from './InputArea';
+import ChatInterface from './ChatInterface';
 
 function AISecretary() {
-  return (
-    <div className="flex flex-col h-full">
-      <MessageList />
-      <InputArea />
-    </div>
-  );
+  return <ChatInterface title="AI Secretary" />;
 }
 
 export default AISecretary;
