@@ -274,15 +274,43 @@ json
 **Response Body:**
 json
 {
-"financialRecords": [
+"records": [
 {
 "id": string,
 "projectName": string,
 "earning": number,
-"cost": number
+"cost": number,
+"employeeName": string,
+"timestamp": string (ISO 8601 date-time format)
 }
 ]
 }
+
+#### 6.2 Add Financial Record
+
+**Endpoint:** `/api/financial-records`
+
+**Method:** POST
+
+**Description:** Adds a new financial record.
+
+**Request Body:**
+json
+{
+"projectName": string,
+"earning": number,
+"cost": number,
+"timestamp": string (ISO 8601 date-time format)
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"recordId": string
+}
+
 
 ## Security Considerations
 

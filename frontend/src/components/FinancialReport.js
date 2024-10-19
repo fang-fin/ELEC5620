@@ -32,6 +32,7 @@ function FinancialReport() {
           projectName,
           earning: parseFloat(earning),
           cost: parseFloat(cost),
+          timestamp: new Date().toISOString() // 添加当前时间戳
         }),
       });
       if (response.ok) {
@@ -96,6 +97,7 @@ function FinancialReport() {
               <th className="border p-2">Earning</th>
               <th className="border p-2">Cost</th>
               <th className="border p-2">Employee Name</th>
+              <th className="border p-2">Timestamp</th>
             </tr>
           </thead>
           <tbody>
@@ -105,6 +107,7 @@ function FinancialReport() {
                 <td className="border p-2">${record.earning.toFixed(2)}</td>
                 <td className="border p-2">${record.cost.toFixed(2)}</td>
                 <td className="border p-2">{record.employeeName}</td>
+                <td className="border p-2">{new Date(record.timestamp).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
