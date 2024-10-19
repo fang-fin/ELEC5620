@@ -19,8 +19,8 @@ function HRInterface({ setIsLoggedIn }) {
         return <TimeAnalysis />;
       case 'mental-health-monitor':
         return <MentalHealthMonitor />;
-      case 'payroll-evaluation':
-        return <PayrollEvaluation />;
+      // case 'payroll-evaluation':
+      //   return <PayrollEvaluation />;
       default:
         return <div>Select a function</div>;
     }

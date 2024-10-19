@@ -87,6 +87,231 @@ json
 - This API should be especially careful with data sensitivity and privacy protection.
 - Consider implementing features like mood tracking, stress level assessment, and resources for mental health support.
 
+### 4. Project Management
+
+#### 4.1 Get All Projects
+
+**Endpoint:** `/api/projects`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all projects.
+
+**Response Body:**
+json
+{
+"projects": [
+{
+"id": string,
+"name": string
+}
+]
+}
+
+#### 4.2 Get Project Details
+
+**Endpoint:** `/api/projects/{projectId}`
+
+**Method:** GET
+
+**Description:** Retrieves details of a specific project.
+
+**Response Body:**
+json
+{
+"projectDetails": {
+"id": string,
+"name": string,
+"description": string,
+"deadline": string (ISO 8601 date format),
+"employees": array of strings (employee IDs)
+}
+}
+
+#### 4.3 Update Project
+
+**Endpoint:** `/api/projects/{projectId}`
+
+**Method:** PUT
+
+**Description:** Updates details of a specific project.
+
+**Request Body:**
+json
+{
+"name": string,
+"description": string,
+"deadline": string (ISO 8601 date format),
+"employees": array of strings (employee IDs)
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string
+}
+
+#### 4.4 Create New Project
+
+**Endpoint:** `/api/projects`
+
+**Method:** POST
+
+**Description:** Creates a new project.
+
+**Request Body:**
+json
+{
+"name": string,
+"description": string,
+"deadline": string (ISO 8601 date format),
+"employees": array of strings (employee IDs)
+}
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"projectId": string
+}
+
+### 5. Team Management
+
+#### 5.1 Get All Teams
+
+**Endpoint:** `/api/teams`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all teams.
+
+**Response Body:**
+json
+{
+"teams": [
+{
+"id": string,
+"name": string
+}
+]
+}
+#### 5.2 Get Team Details
+
+**Endpoint:** `/api/teams/{teamId}`
+
+**Method:** GET
+
+**Description:** Retrieves details of a specific team.
+
+**Response Body:**
+json
+{
+"teamDetails": {
+"id": string,
+"name": string,
+"description": string,
+"employees": array of strings (employee IDs)
+}
+}
+
+#### 5.3 Update Team
+
+**Endpoint:** `/api/teams/{teamId}`
+
+**Method:** PUT
+
+**Description:** Updates details of a specific team.
+
+**Request Body:**
+json
+{
+"name": string,
+"description": string,
+"employees": array of strings (employee IDs)
+}
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string
+}
+
+#### 5.4 Create New Team
+
+**Endpoint:** `/api/teams`
+
+**Method:** POST
+
+**Description:** Creates a new team.
+
+**Request Body:**
+json
+{
+"name": string,
+"description": string,
+"employees": array of strings (employee IDs)
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"teamId": string
+}
+
+### 6. Financial Report
+
+#### 6.1 Get Financial Records
+
+**Endpoint:** `/api/financial-records`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all financial records.
+
+**Response Body:**
+json
+{
+"records": [
+{
+"id": string,
+"projectName": string,
+"earning": number,
+"cost": number,
+"employeeName": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+]
+}
+
+#### 6.2 Add Financial Record
+
+**Endpoint:** `/api/financial-records`
+
+**Method:** POST
+
+**Description:** Adds a new financial record.
+
+**Request Body:**
+json
+{
+"projectName": string,
+"earning": number,
+"cost": number,
+"timestamp": string (ISO 8601 date-time format)
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"recordId": string
+}
+
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
