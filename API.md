@@ -124,7 +124,9 @@ json
 "name": string,
 "description": string,
 "deadline": string (ISO 8601 date format),
-"employees": array of strings (employee IDs)
+"employees": array of strings (employee IDs),
+"totalEarning": number,
+"totalDuration": number (in hours)
 }
 }
 
@@ -211,9 +213,19 @@ json
 "id": string,
 "name": string,
 "description": string,
-"employees": array of strings (employee IDs)
+"employees": array of strings (employee IDs),
+"totalEarning": number,
+"totalDuration": number,
+"teamEfficiency": number
 }
 }
+
+**Notes:**
+- `totalEarning` represents the total earnings for all projects the team has worked on.
+- `totalDuration` represents the total time spent on all projects in hours.
+- `teamEfficiency` is calculated as `totalEarning / totalDuration`, representing the team's earning per hour.
+- Ensure that the calculation of `teamEfficiency` handles cases where `totalDuration` might be zero to avoid division by zero errors.
+- Consider implementing a time frame for these calculations (e.g., last month, last quarter) for more relevant efficiency metrics.
 
 #### 5.3 Update Team
 
@@ -373,6 +385,7 @@ json
 "feedbackHistory": [
 {
 "id": string,
+"employeeName": string,
 "content": string,
 "timestamp": string (ISO 8601 date-time format)
 }
@@ -402,6 +415,142 @@ json
 "feedbackId": string
 }
 
+### 9. Clock-In System
+
+#### 9.1 Get Clock-In Records
+
+**Endpoint:** `/api/clock-in-records`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all clock-in records for the authenticated user.
+
+**Response Body:**
+json
+{
+"records": [
+{
+"id": string,
+"projectName": string,
+"startTime": string,
+"endTime": string,
+"duration": number
+}
+]
+}
+
+### 10. Employee Management
+
+#### 10.1 Get All Employees
+
+**Endpoint:** `/api/employees`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all employees with their work statistics.
+
+**Response Body:**
+json
+{
+"employees": [
+{
+"id": string,
+"name": string,
+"totalWorkDuration": number,
+"numberOfProjects": number
+}
+]
+}
+
+#### 10.2 Add New Employee
+
+**Endpoint:** `/api/employees`
+
+**Method:** POST
+
+**Description:** Adds a new employee to the system.
+
+**Request Body:**
+json
+{
+"name": string,
+"age": number,
+"gender": string
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"employeeId": string
+}
+
+**Notes:**
+- The `totalWorkDuration` should be calculated from the employee's clock-in records.
+- The `numberOfProjects` should be derived from the projects the employee is associated with.
+- Consider implementing additional endpoints for updating and deleting employee records.
+- Ensure proper access control to restrict who can add or view employee information.
+- The `gender` field is collected during employee creation but not displayed in the list view to maintain privacy.
+### 11. Advice Box
+
+#### 11.1 Get All Feedback (for Advice Box)
+
+**Endpoint:** `/api/feedback`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all feedback submissions for display in the Advice Box.
+
+**Response Body:**
+json
+{
+"feedbackHistory": [
+{
+"id": string,
+"employeeName": string,
+"content": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+]
+}
+
+
+**Notes:**
+- This endpoint is the same as the one used for getting feedback history, but it's listed here to emphasize its use in the Advice Box context.
+- Consider implementing pagination if the number of feedback entries becomes large.
+- Ensure that sensitive information is properly handled and that only authorized personnel can access this data.
+
+### 12. Time Analysis
+
+#### 12.1 Get Employee Time Analysis Data
+
+**Endpoint:** `/api/employee-time-analysis`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all employees with their weekly and monthly working hours.
+
+**Response Body:**
+json
+{
+"employees": [
+{
+"id": string,
+"name": string,
+"weeklyHours": number,
+"monthlyHours": number
+}
+]
+}
+
+**Notes:**
+- The `weeklyHours` should represent the total working hours for the most recent 7-day period.
+- The `monthlyHours` should represent the total working hours for the most recent 30-day period.
+- Ensure that the calculation of working hours is based on the clock-in and clock-out records.
+- Consider implementing pagination if the number of employees is large.
+- This endpoint should be restricted to users with appropriate permissions (e.g., managers, HR personnel).
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
@@ -421,3 +570,4 @@ json
 ## Version Control
 
 This API is versioned. The current version is v1. When making changes, consider backwards compatibility or create a new version if breaking changes are necessary.
+

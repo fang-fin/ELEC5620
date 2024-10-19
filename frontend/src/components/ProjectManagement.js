@@ -6,7 +6,6 @@ function ProjectManagement() {
   const [projectDetails, setProjectDetails] = useState({});
 
   useEffect(() => {
-    // Fetch projects from API
     fetchProjects();
   }, []);
 
@@ -62,12 +61,6 @@ function ProjectManagement() {
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-bold mb-4">Project Management</h2>
       
-      {/* Database Relationship Display */}
-      <div className="mb-6">
-        <h3 className="text-xl font-semibold mb-2">Database Relationships</h3>
-        {/* Add your database relationship display here */}
-      </div>
-
       {/* Project List */}
       <div className="flex flex-wrap gap-2 mb-4">
         {projects.map((project) => (
@@ -129,10 +122,32 @@ function ProjectManagement() {
               <input
                 type="text"
                 name="employees"
-                value={projectDetails.employees || ''}
+                value={projectDetails.employees ? projectDetails.employees.join(', ') : ''}
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 placeholder="Enter employee IDs separated by commas"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Total Earning</label>
+              <input
+                type="number"
+                name="totalEarning"
+                value={projectDetails.totalEarning || ''}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Total Duration (hours)</label>
+              <input
+                type="number"
+                name="totalDuration"
+                value={projectDetails.totalDuration || ''}
+                onChange={handleInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                readOnly
               />
             </div>
           </div>

@@ -6,7 +6,6 @@ function TeamManagement() {
   const [teamDetails, setTeamDetails] = useState({});
 
   useEffect(() => {
-    // Fetch teams from API
     fetchTeams();
   }, []);
 
@@ -113,10 +112,40 @@ function TeamManagement() {
               <input
                 type="text"
                 name="employees"
-                value={teamDetails.employees || ''}
+                value={teamDetails.employees ? teamDetails.employees.join(', ') : ''}
                 onChange={handleInputChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 placeholder="Enter employee IDs separated by commas"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Total Earning</label>
+              <input
+                type="number"
+                name="totalEarning"
+                value={teamDetails.totalEarning || ''}
+                readOnly
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 bg-gray-100"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Total Duration (hours)</label>
+              <input
+                type="number"
+                name="totalDuration"
+                value={teamDetails.totalDuration || ''}
+                readOnly
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 bg-gray-100"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Team Efficiency (earning/hour)</label>
+              <input
+                type="number"
+                name="teamEfficiency"
+                value={teamDetails.teamEfficiency || ''}
+                readOnly
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 bg-gray-100"
               />
             </div>
           </div>
