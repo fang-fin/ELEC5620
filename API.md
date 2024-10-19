@@ -87,6 +87,94 @@ json
 - This API should be especially careful with data sensitivity and privacy protection.
 - Consider implementing features like mood tracking, stress level assessment, and resources for mental health support.
 
+### 4. Project Management
+
+#### 4.1 Get All Projects
+
+**Endpoint:** `/api/projects`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all projects.
+
+**Response Body:**
+json
+{
+"projects": [
+{
+"id": string,
+"name": string
+}
+]
+}
+
+#### 4.2 Get Project Details
+
+**Endpoint:** `/api/projects/{projectId}`
+
+**Method:** GET
+
+**Description:** Retrieves details of a specific project.
+
+**Response Body:**
+json
+{
+"projectDetails": {
+"id": string,
+"name": string,
+"description": string,
+"deadline": string (ISO 8601 date format),
+"employees": array of strings (employee IDs)
+}
+}
+
+#### 4.3 Update Project
+
+**Endpoint:** `/api/projects/{projectId}`
+
+**Method:** PUT
+
+**Description:** Updates details of a specific project.
+
+**Request Body:**
+json
+{
+"name": string,
+"description": string,
+"deadline": string (ISO 8601 date format),
+"employees": array of strings (employee IDs)
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string
+}
+
+#### 4.4 Create New Project
+
+**Endpoint:** `/api/projects`
+
+**Method:** POST
+
+**Description:** Creates a new project.
+
+**Request Body:**
+json
+{
+"name": string,
+"description": string,
+"deadline": string (ISO 8601 date format),
+"employees": array of strings (employee IDs)
+}
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"projectId": string
+}
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
