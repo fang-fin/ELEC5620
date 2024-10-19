@@ -261,6 +261,29 @@ json
 "teamId": string
 }
 
+### 6. Financial Report
+
+#### 6.1 Get Financial Records
+
+**Endpoint:** `/api/financial-records`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all financial records.
+
+**Response Body:**
+json
+{
+"financialRecords": [
+{
+"id": string,
+"projectName": string,
+"earning": number,
+"cost": number
+}
+]
+}
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
