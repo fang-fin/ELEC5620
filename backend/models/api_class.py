@@ -24,10 +24,12 @@ class ManagerAPI(APIBuilder):
     def add_general_functions(self):
         def manage_projects():
             # TODO: Implement project management logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"projects": [{"id": "1", "name": "Project A"}]}
 
         def manage_team():
             # TODO: Implement team management logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"teams": [{"id": "1", "name": "Team A"}]}
 
         self.api.manage_projects = manage_projects
@@ -47,18 +49,22 @@ class EmployeeAPI(APIBuilder):
     def add_general_functions(self):
         def financial_report():
             # TODO: Implement financial report logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"financial_data": [{"id": "1", "amount": 1000}]}
 
         def self_assessment(assessment):
             # TODO: Implement self-assessment logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"success": True, "message": "Assessment submitted"}
 
         def submit_feedback(feedback):
             # TODO: Implement feedback submission logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"success": True, "message": "Feedback submitted"}
 
         def clock_in(data):
             # TODO: Implement clock-in logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"success": True, "message": "Clock-in recorded"}
 
         self.api.financial_report = financial_report
@@ -80,14 +86,17 @@ class HRAPI(APIBuilder):
     def add_general_functions(self):
         def employee_management():
             # TODO: Implement employee management logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"employees": [{"id": "1", "name": "John Doe"}]}
 
         def advice_box():
             # TODO: Implement advice box logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"advice": [{"id": "1", "content": "Sample advice"}]}
 
         def time_analysis():
             # TODO: Implement time analysis logic with psycopg2
+            # This return type is just hardcoding for testing
             return {"time_data": [{"employee_id": "1", "hours_worked": 40}]}
 
         self.api.employee_management = employee_management
