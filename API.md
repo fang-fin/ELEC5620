@@ -365,7 +365,7 @@ json
 
 **Method:** GET
 
-**Description:** Retrieves a list of all feedback submissions.np
+**Description:** Retrieves a list of all feedback submissions.
 
 **Response Body:**
 json
@@ -373,6 +373,7 @@ json
 "feedbackHistory": [
 {
 "id": string,
+"employeeName": string,
 "content": string,
 "timestamp": string (ISO 8601 date-time format)
 }
@@ -479,6 +480,35 @@ json
 - Consider implementing additional endpoints for updating and deleting employee records.
 - Ensure proper access control to restrict who can add or view employee information.
 - The `gender` field is collected during employee creation but not displayed in the list view to maintain privacy.
+### 11. Advice Box
+
+#### 11.1 Get All Feedback (for Advice Box)
+
+**Endpoint:** `/api/feedback`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all feedback submissions for display in the Advice Box.
+
+**Response Body:**
+json
+{
+"feedbackHistory": [
+{
+"id": string,
+"employeeName": string,
+"content": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+]
+}
+
+
+**Notes:**
+- This endpoint is the same as the one used for getting feedback history, but it's listed here to emphasize its use in the Advice Box context.
+- Consider implementing pagination if the number of feedback entries becomes large.
+- Ensure that sensitive information is properly handled and that only authorized personnel can access this data.
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
