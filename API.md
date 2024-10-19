@@ -124,7 +124,9 @@ json
 "name": string,
 "description": string,
 "deadline": string (ISO 8601 date format),
-"employees": array of strings (employee IDs)
+"employees": array of strings (employee IDs),
+"totalEarning": number,
+"totalDuration": number (in hours)
 }
 }
 
