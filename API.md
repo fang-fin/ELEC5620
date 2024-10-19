@@ -312,6 +312,96 @@ json
 }
 
 
+### 7. Psychological Assessment
+
+#### 7.1 Get Psychological Assessments
+
+**Endpoint:** `/api/psychological-assessments`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all psychological assessments for the authenticated employee.
+
+**Response Body:**
+json
+{
+"assessments": [
+{
+"id": string,
+"assessment": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+]
+}
+
+#### 7.2 Submit Psychological Assessment
+
+**Endpoint:** `/api/psychological-assessments`
+
+**Method:** POST
+
+**Description:** Submits a new psychological assessment.
+
+**Request Body:**
+
+json
+{
+"assessment": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"assessmentId": string
+}
+
+### 8. Feedback Mechanism
+
+#### 8.1 Get Feedback History
+
+**Endpoint:** `/api/feedback`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all feedback submissions.
+
+**Response Body:**
+json
+{
+"feedbackHistory": [
+{
+"id": string,
+"content": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+]
+}
+
+#### 8.2 Submit Feedback
+
+**Endpoint:** `/api/feedback`
+
+**Method:** POST
+
+**Description:** Submits a new feedback.
+
+**Request Body:**
+json
+{
+"content": string,
+"timestamp": string (ISO 8601 date-time format)
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"feedbackId": string
+}
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
