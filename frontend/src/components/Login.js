@@ -6,18 +6,33 @@ function Login({ setIsLoggedIn, setUserRole }) {
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // 这里应该有实际的登录逻辑
-    setIsLoggedIn(true);
-    if (username.toLowerCase() === 'manager') {
-      setUserRole('manager');
-    } else if (username.toLowerCase() === 'hr') {
-      setUserRole('hr');
-    } else {
-      setUserRole('employee');
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.toLowerCase(), // Convert to lowercase for case-insensitive comparison
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsLoggedIn(true);
+        setUserRole(data.role);
+        localStorage.setItem('token', data.token); // Store the token for future authenticated requests
+        navigate('/dashboard'); // Redirect to the dashboard or appropriate page
+      } else {
+        alert('Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('An error occurred during login. Please try again.');
     }
-    navigate('/chat');
   };
 
   return (
