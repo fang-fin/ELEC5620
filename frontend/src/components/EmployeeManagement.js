@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 
 function EmployeeManagement() {
   const [employeeName, setEmployeeName] = useState('');
+  const [employeeAge, setEmployeeAge] = useState('');
+  const [employeeGender, setEmployeeGender] = useState('');
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
@@ -26,11 +28,17 @@ function EmployeeManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: employeeName }),
+        body: JSON.stringify({ 
+          name: employeeName,
+          age: parseInt(employeeAge),
+          gender: employeeGender
+        }),
       });
       if (response.ok) {
         alert('Employee added successfully');
         setEmployeeName('');
+        setEmployeeAge('');
+        setEmployeeGender('');
         fetchEmployees();
       } else {
         alert('Failed to add employee');
@@ -59,6 +67,34 @@ function EmployeeManagement() {
               required
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Employee Age
+            </label>
+            <input
+              type="number"
+              value={employeeAge}
+              onChange={(e) => setEmployeeAge(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Employee Gender
+            </label>
+            <select
+              value={employeeGender}
+              onChange={(e) => setEmployeeGender(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
           <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
             Add Employee
           </button>
@@ -73,6 +109,7 @@ function EmployeeManagement() {
             <tr className="bg-gray-200">
               <th className="border p-2">ID</th>
               <th className="border p-2">Name</th>
+              <th className="border p-2">Age</th>
               <th className="border p-2">Total Work Duration (hours)</th>
               <th className="border p-2">Number of Projects</th>
             </tr>
@@ -82,6 +119,7 @@ function EmployeeManagement() {
               <tr key={employee.id}>
                 <td className="border p-2">{employee.id}</td>
                 <td className="border p-2">{employee.name}</td>
+                <td className="border p-2">{employee.age}</td>
                 <td className="border p-2">{employee.totalWorkDuration}</td>
                 <td className="border p-2">{employee.numberOfProjects}</td>
               </tr>

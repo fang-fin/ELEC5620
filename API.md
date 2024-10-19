@@ -449,6 +449,36 @@ json
 ]
 }
 
+#### 10.2 Add New Employee
+
+**Endpoint:** `/api/employees`
+
+**Method:** POST
+
+**Description:** Adds a new employee to the system.
+
+**Request Body:**
+json
+{
+"name": string,
+"age": number,
+"gender": string
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"employeeId": string
+}
+
+**Notes:**
+- The `totalWorkDuration` should be calculated from the employee's clock-in records.
+- The `numberOfProjects` should be derived from the projects the employee is associated with.
+- Consider implementing additional endpoints for updating and deleting employee records.
+- Ensure proper access control to restrict who can add or view employee information.
+- The `gender` field is collected during employee creation but not displayed in the list view to maintain privacy.
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
