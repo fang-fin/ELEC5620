@@ -509,6 +509,36 @@ json
 - Consider implementing pagination if the number of feedback entries becomes large.
 - Ensure that sensitive information is properly handled and that only authorized personnel can access this data.
 
+### 12. Time Analysis
+
+#### 12.1 Get Employee Time Analysis Data
+
+**Endpoint:** `/api/employee-time-analysis`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all employees with their weekly and monthly working hours.
+
+**Response Body:**
+json
+{
+"employees": [
+{
+"id": string,
+"name": string,
+"weeklyHours": number,
+"monthlyHours": number
+}
+]
+}
+
+**Notes:**
+- The `weeklyHours` should represent the total working hours for the most recent 7-day period.
+- The `monthlyHours` should represent the total working hours for the most recent 30-day period.
+- Ensure that the calculation of working hours is based on the clock-in and clock-out records.
+- Consider implementing pagination if the number of employees is large.
+- This endpoint should be restricted to users with appropriate permissions (e.g., managers, HR personnel).
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
