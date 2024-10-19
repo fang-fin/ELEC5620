@@ -213,9 +213,19 @@ json
 "id": string,
 "name": string,
 "description": string,
-"employees": array of strings (employee IDs)
+"employees": array of strings (employee IDs),
+"totalEarning": number,
+"totalDuration": number,
+"teamEfficiency": number
 }
 }
+
+**Notes:**
+- `totalEarning` represents the total earnings for all projects the team has worked on.
+- `totalDuration` represents the total time spent on all projects in hours.
+- `teamEfficiency` is calculated as `totalEarning / totalDuration`, representing the team's earning per hour.
+- Ensure that the calculation of `teamEfficiency` handles cases where `totalDuration` might be zero to avoid division by zero errors.
+- Consider implementing a time frame for these calculations (e.g., last month, last quarter) for more relevant efficiency metrics.
 
 #### 5.3 Update Team
 
