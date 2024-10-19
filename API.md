@@ -551,6 +551,91 @@ json
 - Consider implementing pagination if the number of employees is large.
 - This endpoint should be restricted to users with appropriate permissions (e.g., managers, HR personnel).
 
+### 13. User Authentication
+
+#### 13.1 User Login
+
+**Endpoint:** `/api/login`
+
+**Method:** POST
+
+**Description:** Authenticates a user and returns their role and an authentication token.
+
+**Request Body:**
+json
+{
+"username": string,
+"password": string
+}
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"role": string,
+"token": string
+}
+**Notes:**
+- The username comparison should be case-insensitive. Convert the input username to lowercase before comparing with the database.
+- Implement proper password hashing and salting on the backend for security.
+- The `role` field in the response should be one of: "manager", "hr", or "employee".
+- Generate a secure JWT (JSON Web Token) or similar token for authenticated sessions.
+- Store user roles and permissions in the database to determine access levels.
+- Implement token expiration and refresh mechanisms for enhanced security.
+- Consider implementing multi-factor authentication for sensitive roles (e.g., managers and HR).
+- Log failed login attempts and implement account lockout after multiple failed attempts to prevent brute-force attacks.
+- Ensure all subsequent API requests include the authentication token in the header for user verification.
+- Implement proper error handling to avoid leaking sensitive information in error messages.
+
+### 14. Time Tracking
+
+#### 14.1 Get Time Tracking Data
+
+**Endpoint:** `/api/time-tracking`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all time tracking records for the authenticated user.
+
+**Response Body:**
+json
+{
+"records": [
+{
+"id": string,
+"projectName": string,
+"startTime": string,
+"endTime": string,
+"duration": number
+}
+]
+}
+
+#### 14.2 Add Time Tracking Record
+
+**Endpoint:** `/api/time-tracking`
+
+**Method:** POST
+
+**Description:** Adds a new time tracking record.
+
+**Request Body:**
+json
+{
+"projectName": string,
+"startTime": string,
+"endTime": string,
+"duration": number
+}
+
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"recordId": string
+}
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
