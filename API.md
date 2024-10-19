@@ -365,7 +365,7 @@ json
 
 **Method:** GET
 
-**Description:** Retrieves a list of all feedback submissions.
+**Description:** Retrieves a list of all feedback submissions.np
 
 **Response Body:**
 json
@@ -402,6 +402,53 @@ json
 "feedbackId": string
 }
 
+### 9. Clock-In System
+
+#### 9.1 Get Clock-In Records
+
+**Endpoint:** `/api/clock-in-records`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all clock-in records for the authenticated user.
+
+**Response Body:**
+json
+{
+"records": [
+{
+"id": string,
+"projectName": string,
+"startTime": string,
+"endTime": string,
+"duration": number
+}
+]
+}
+
+### 10. Employee Management
+
+#### 10.1 Get All Employees
+
+**Endpoint:** `/api/employees`
+
+**Method:** GET
+
+**Description:** Retrieves a list of all employees with their work statistics.
+
+**Response Body:**
+json
+{
+"employees": [
+{
+"id": string,
+"name": string,
+"totalWorkDuration": number,
+"numberOfProjects": number
+}
+]
+}
+
 ## Security Considerations
 
 1. All API endpoints should use HTTPS.
@@ -421,3 +468,4 @@ json
 ## Version Control
 
 This API is versioned. The current version is v1. When making changes, consider backwards compatibility or create a new version if breaking changes are necessary.
+
