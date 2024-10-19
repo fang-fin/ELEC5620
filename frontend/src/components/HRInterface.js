@@ -4,7 +4,7 @@ import EmployeeManagement from './EmployeeManagement';
 import AdviceBox from './AdviceBox';
 import TimeAnalysis from './TimeAnalysis';
 import MentalHealthMonitor from './MentalHealthMonitor';
-import PayrollEvaluation from './PayrollEvaluation';
+// import PayrollEvaluation from './PayrollEvaluation';
 
 function HRInterface({ setIsLoggedIn }) {
   const [selectedFunction, setSelectedFunction] = useState('employee-management');
