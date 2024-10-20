@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "your-app-name",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -40,5 +40,6 @@
     "tailwindcss": "^3.2.4",
     "postcss": "^8.4.19",
     "autoprefixer": "^10.4.13"
-  }
+  },
+  "proxy": "http://localhost:5000"
 }

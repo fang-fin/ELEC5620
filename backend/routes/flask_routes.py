@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify
 from models.api_class import APIBuilder, ManagerAPI, EmployeeAPI, HRAPI
-from langchain.llms import OpenAI
-from langchain.chains import ConversationChain
+# from langchain.llms import OpenAI
+# from langchain.chains import ConversationChain
 
 app = Flask(__name__)
-llm = OpenAI(temperature=0.7)
-conversation = ConversationChain(llm=llm, verbose=True)
+# llm = OpenAI(temperature=0.7)
+# conversation = ConversationChain(llm=llm, verbose=True)
 
 class APIDirector:
     def __init__(self):

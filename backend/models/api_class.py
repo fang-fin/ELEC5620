@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from langchain.llms import OpenAI
-from langchain.chains import ConversationChain
+# from langchain.llms import OpenAI
+# from langchain.chains import ConversationChain
 
 class API:
     pass
@@ -35,15 +35,15 @@ class ManagerAPI(APIBuilder):
         self.api.manage_projects = manage_projects
         self.api.manage_team = manage_team
 
-    def add_ai_functions(self):
-        llm = OpenAI(temperature=0.7)
-        conversation = ConversationChain(llm=llm, verbose=True)
+    # def add_ai_functions(self):
+    #     llm = OpenAI(temperature=0.7)
+    #     conversation = ConversationChain(llm=llm, verbose=True)
 
-        def ai_secretary(user_input):
-            response = conversation.predict(input=user_input)
-            return response
+    #     def ai_secretary(user_input):
+    #         response = conversation.predict(input=user_input)
+    #         return response
 
-        self.api.ai_secretary = ai_secretary
+    #     self.api.ai_secretary = ai_secretary
 
 class EmployeeAPI(APIBuilder):
     def add_general_functions(self):
@@ -72,15 +72,15 @@ class EmployeeAPI(APIBuilder):
         self.api.submit_feedback = submit_feedback
         self.api.clock_in = clock_in
 
-    def add_ai_functions(self):
-        llm = OpenAI(temperature=0.7)
-        conversation = ConversationChain(llm=llm, verbose=True)
+    # def add_ai_functions(self):
+    #     llm = OpenAI(temperature=0.7)
+    #     conversation = ConversationChain(llm=llm, verbose=True)
 
-        def personal_savings_assistant(user_input):
-            response = conversation.predict(input=user_input)
-            return response
+    #     def personal_savings_assistant(user_input):
+    #         response = conversation.predict(input=user_input)
+    #         return response
 
-        self.api.personal_savings_assistant = personal_savings_assistant
+    #     self.api.personal_savings_assistant = personal_savings_assistant
 
 class HRAPI(APIBuilder):
     def add_general_functions(self):
@@ -103,13 +103,13 @@ class HRAPI(APIBuilder):
         self.api.advice_box = advice_box
         self.api.time_analysis = time_analysis
 
-    def add_ai_functions(self):
-        llm = OpenAI(temperature=0.7)
-        conversation = ConversationChain(llm=llm, verbose=True)
+    # def add_ai_functions(self):
+    #     llm = OpenAI(temperature=0.7)
+    #     conversation = ConversationChain(llm=llm, verbose=True)
 
-        def mental_health_monitor(user_input):
-            response = conversation.predict(input=user_input)
-            return response
+    #     def mental_health_monitor(user_input):
+    #         response = conversation.predict(input=user_input)
+    #         return response
 
-        self.api.mental_health_monitor = mental_health_monitor
+    #     self.api.mental_health_monitor = mental_health_monitor
 

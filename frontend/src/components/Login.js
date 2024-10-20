@@ -8,6 +8,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Attempting login with:', { username, password }); // Debug log
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -15,18 +16,23 @@ function Login({ setIsLoggedIn, setUserRole }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: username.toLowerCase(), // Convert to lowercase for case-insensitive comparison
+          username: username.toLowerCase(),
           password,
         }),
       });
 
+      console.log('Response status:', response.status); // Debug log
+
       if (response.ok) {
         const data = await response.json();
+        console.log('Login successful:', data); // Debug log
         setIsLoggedIn(true);
         setUserRole(data.role);
-        localStorage.setItem('token', data.token); // Store the token for future authenticated requests
-        navigate('/dashboard'); // Redirect to the dashboard or appropriate page
+        localStorage.setItem('token', data.token);
+        navigate('/chat');
       } else {
+        const errorData = await response.json();
+        console.error('Login failed:', errorData); // Debug log
         alert('Invalid username or password');
       }
     } catch (error) {
