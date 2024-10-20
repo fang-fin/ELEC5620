@@ -29,7 +29,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
         setIsLoggedIn(true);
         setUserRole(data.role);
         localStorage.setItem('token', data.token);
-        navigate('/chat');
+        navigate('/chat'); // Change this line from '/dashboard' to '/chat'
       } else {
         const errorData = await response.json();
         console.error('Login failed:', errorData); // Debug log
