@@ -28,8 +28,8 @@ function Login({ setIsLoggedIn, setUserRole }) {
         console.log('Login successful:', data); // Debug log
         setIsLoggedIn(true);
         setUserRole(data.role);
-        localStorage.setItem('token', data.token);
-        navigate('/chat'); // Change this line from '/dashboard' to '/chat'
+        // 移除 localStorage.setItem('token', data.token);
+        navigate('/chat');
       } else {
         const errorData = await response.json();
         console.error('Login failed:', errorData); // Debug log

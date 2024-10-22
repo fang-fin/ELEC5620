@@ -16,8 +16,7 @@ def login():
         return jsonify({
             "success": True,
             "message": "Login successful",
-            "role": user_data['role'],
-            "token": "mock_token_12345"
+            "role": user_data['role']
         }), 200
     else:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401

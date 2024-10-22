@@ -559,7 +559,7 @@ json
 
 **Method:** POST
 
-**Description:** Authenticates a user and returns their role and an authentication token.
+**Description:** Authenticates a user and returns their role.
 
 **Request Body:**
 json
@@ -572,8 +572,7 @@ json
 {
 "success": boolean,
 "message": string,
-"role": string,
-"token": string
+"role": string
 }
 **Notes:**
 - The username comparison should be case-insensitive. Convert the input username to lowercase before comparing with the database.
@@ -655,4 +654,5 @@ json
 ## Version Control
 
 This API is versioned. The current version is v1. When making changes, consider backwards compatibility or create a new version if breaking changes are necessary.
+
 
