@@ -285,11 +285,39 @@ def get_psychological_assessments():
 
 
 def get_feedback():
-    # TODO: Implement logic to retrieve feedback
-    # 1. Connect to the database
-    # 2. Query the feedback table to get all feedback records
-    # 3. Return the list of feedback
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT f.feedback_id, e.firstname || ' ' || e.lastname AS employee_name, 
+                   f.feedback_content, f."timestamp"
+            FROM feedback f
+            JOIN employee e ON f.employee_id = e.employee_id
+            """
+            cursor.execute(query)
+            feedbacks = cursor.fetchall()
+
+            feedback_list = []
+            for feedback in feedbacks:
+                feedback_list.append({
+                    'id': str(feedback[0]), 
+                    'employeeName': feedback[1],  
+                    'content': feedback[2],  
+                    'timestamp': feedback[3].isoformat()  
+                })
+
+            return {
+                'feedbackHistory': feedback_list
+            }
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching feedback: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_clock_in_records():
     # TODO: Implement logic to retrieve clock-in records
