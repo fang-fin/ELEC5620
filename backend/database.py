@@ -442,18 +442,94 @@ def get_employee_time_analysis():
         conn.close()
 
 def create_project(project_data):
-    # TODO: Implement logic to create a project
-    # 1. Connect to the database
-    # 2. Insert project_data into the project table
-    # 3. Return the ID of the newly created project
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        # Create a cursor to execute SQL queries
+        with conn.cursor() as cursor:
+            # Insert project data into the projects table
+            query = """
+            INSERT INTO projects (project_name, description, deadline)
+            VALUES (%s, %s, %s)
+            RETURNING project_id
+            """
+            cursor.execute(query, (project_data['name'].lower(), project_data['description'].lower(), project_data['deadline']))
+            project_id = cursor.fetchone()[0]
+
+            # Insert employee-project relationships into the employee_project table
+            for employee_id in project_data['employees'].split(','):
+                cursor.execute("INSERT INTO employee_project (employee_id, project_id) VALUES (%s, %s)", 
+                               (employee_id.strip().lower(), project_id))
+
+            # Commit after all employee-project relations are inserted
+            conn.commit()
+
+            # Success response
+            response = {
+                "success": True,
+                "message": "Project created successfully",
+                "projectId": project_id
+            }
+            print(response)
+            return project_id
+
+    except psycopg2.Error as e:
+        logging.error(f"Error creating project: {e}")
+        response = {
+            "success": False,
+            "message": "Failed to create project",
+            "projectId": None
+        }
+        print(response)
+        return None
+
+    finally:
+        conn.close()
+
+
 
 def update_project(project_id, project_data):
-    # TODO: Implement logic to update a project
-    # 1. Connect to the database
-    # 2. Update the project table based on project_id with the relevant information
-    # 3. Return whether the update was successful
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+    try:
+        with conn.cursor() as cursor:
+            # Update project details in the projects table
+            query = """
+            UPDATE projects
+            SET project_name = %s, description = %s, deadline = %s
+            WHERE project_id = %s
+            """
+            cursor.execute(query, (project_data['name'].lower(), project_data['description'].lower(), project_data['deadline'], project_id))
+
+            # Delete existing employee-project relationships
+            cursor.execute("DELETE FROM employee_project WHERE project_id = %s", (project_id,))
+
+            # Insert updated employee-project relationships
+            for employee_id in project_data['employees'].split(','):
+                cursor.execute("INSERT INTO employee_project (employee_id, project_id) VALUES (%s, %s)", 
+                               (employee_id.strip().lower(), project_id))
+
+            conn.commit()
+            response = {
+                "success": True,
+                "message": "Project updated successfully"
+            }
+            print(response)
+            return True
+    except psycopg2.Error as e:
+        logging.error(f"Error updating project: {e}")
+        response = {
+            "success": False,
+            "message": "Failed to update project"
+        }
+        return response
+    finally:
+        conn.close()
 
 def create_team(team_data):
     # TODO: Implement logic to create a team
