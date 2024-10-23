@@ -163,7 +163,12 @@ def get_teams():
                 return {
                     "teams": []
                 }
-
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching teams: {e}")
+        return None
+    finally:
+        conn.close()
+        
 def get_team_details(team_id):
     # TODO: Implement logic to retrieve specific team details
     # 1. Connect to the database
