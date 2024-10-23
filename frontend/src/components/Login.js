@@ -8,7 +8,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Attempting login with:', { username, password }); // Debug log
+    console.log('Attempting login with:', { username, password });
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -21,18 +21,18 @@ function Login({ setIsLoggedIn, setUserRole }) {
         }),
       });
 
-      console.log('Response status:', response.status); // Debug log
+      console.log('Response status:', response.status);
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Login successful:', data); // Debug log
+        console.log('Login successful:', data);
         setIsLoggedIn(true);
         setUserRole(data.role);
-        // 移除 localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.userId); // 存储用户ID
         navigate('/chat');
       } else {
         const errorData = await response.json();
-        console.error('Login failed:', errorData); // Debug log
+        console.error('Login failed:', errorData);
         alert('Invalid username or password');
       }
     } catch (error) {

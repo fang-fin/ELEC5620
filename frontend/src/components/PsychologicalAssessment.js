@@ -23,6 +23,7 @@ function PsychologicalAssessment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const combinedText = `Q1: ${question1}\nQ2: ${question2}\nQ3: ${question3}`;
+    const userId = localStorage.getItem('userId'); // 获取用户ID
     try {
       const response = await fetch('/api/psychological-assessments', {
         method: 'POST',
@@ -31,7 +32,8 @@ function PsychologicalAssessment() {
         },
         body: JSON.stringify({
           assessment: combinedText,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          userId: userId // 包含用户ID
         }),
       });
       if (response.ok) {
