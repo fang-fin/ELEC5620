@@ -4,6 +4,7 @@ function EmployeeManagement() {
   const [employeeName, setEmployeeName] = useState('');
   const [employeeAge, setEmployeeAge] = useState('');
   const [employeeGender, setEmployeeGender] = useState('');
+  const [employeeRole, setEmployeeRole] = useState('');  // 新增：员工角色
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
@@ -31,7 +32,8 @@ function EmployeeManagement() {
         body: JSON.stringify({ 
           name: employeeName,
           age: parseInt(employeeAge),
-          gender: employeeGender
+          gender: employeeGender,
+          role: employeeRole  // 新增：包含员工角色
         }),
       });
       if (response.ok) {
@@ -39,6 +41,7 @@ function EmployeeManagement() {
         setEmployeeName('');
         setEmployeeAge('');
         setEmployeeGender('');
+        setEmployeeRole('');  // 重置角色选择
         fetchEmployees();
       } else {
         alert('Failed to add employee');
@@ -95,6 +98,22 @@ function EmployeeManagement() {
               <option value="other">Other</option>
             </select>
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Employee Role
+            </label>
+            <select
+              value={employeeRole}
+              onChange={(e) => setEmployeeRole(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            >
+              <option value="">Select Role</option>
+              <option value="manager">Manager</option>
+              <option value="hr">HR</option>
+              <option value="employee">Employee</option>
+            </select>
+          </div>
           <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
             Add Employee
           </button>
@@ -110,6 +129,8 @@ function EmployeeManagement() {
               <th className="border p-2">ID</th>
               <th className="border p-2">Name</th>
               <th className="border p-2">Age</th>
+              <th className="border p-2">Gender</th>
+              <th className="border p-2">Role</th>
               <th className="border p-2">Total Work Duration (hours)</th>
               <th className="border p-2">Number of Projects</th>
             </tr>
@@ -120,6 +141,8 @@ function EmployeeManagement() {
                 <td className="border p-2">{employee.id}</td>
                 <td className="border p-2">{employee.name}</td>
                 <td className="border p-2">{employee.age}</td>
+                <td className="border p-2">{employee.gender}</td>
+                <td className="border p-2">{employee.role}</td>
                 <td className="border p-2">{employee.totalWorkDuration}</td>
                 <td className="border p-2">{employee.numberOfProjects}</td>
               </tr>
