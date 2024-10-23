@@ -53,11 +53,33 @@ def check_login(username, password):
         conn.close() 
 
 def get_projects():
-    # TODO: Implement logic to retrieve all projects
-    # 1. Connect to the database
-    # 2. Query the project table to get all project information
-    # 3. Return the list of projects
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT project_id, project_name
+            FROM projects
+            """
+            cursor.execute(query)
+            projects = cursor.fetchall()
+
+            project_list = []
+            for project in projects:
+                project_list.append({
+                    'Project_id': project[0],
+                    'project_name': project[1]
+                })
+
+            return project_list
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching projects: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_project_details(project_id):
     # TODO: Implement logic to retrieve specific project details
