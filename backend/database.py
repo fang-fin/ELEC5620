@@ -205,11 +205,49 @@ def get_team_details(team_id):
         conn.close()
 
 def get_financial_records():
-    # TODO: Implement logic to retrieve financial records
-    # 1. Connect to the database
-    # 2. Query the financial records table to get all financial records
-    # 3. Return the list of financial records
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            # Query to get financial records along with project name and employee details
+            query = """
+            SELECT fr.item_id, p.project_name, 
+                   SUM(CASE WHEN fr.category = 'income' THEN fr.amount ELSE 0 END) AS earning,
+                   SUM(CASE WHEN fr.category = 'expense' THEN fr.amount ELSE 0 END) AS cost,
+                   e.firstname || ' ' || e.lastname AS employee_name,
+                   fr."timestamp"
+            FROM financial_records fr
+            LEFT JOIN projects p ON fr.project_id = p.project_id
+            LEFT JOIN employee e ON fr.employee_id = e.employee_id
+            GROUP BY fr.item_id, p.project_name, e.firstname, e.lastname, fr."timestamp"
+            """
+            cursor.execute(query)
+            records = cursor.fetchall()
+
+            # Format the response as a list of dictionaries
+            records_list = []
+            for record in records:
+                records_list.append({
+                    'id': str(record[0]),  # item_id as string
+                    'projectName': record[1],  # project_name
+                    'earning': float(record[2]),  # earning (income)
+                    'cost': float(record[3]),  # cost (expense)
+                    'employeeName': record[4],  # employee name (firstname + lastname)
+                    'timestamp': record[5].isoformat()  # ISO 8601 format
+                })
+
+            return {
+                'records': records_list
+            }
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching financial records: {e}")
+        return None
+    finally:
+        conn.close()
+
 
 def get_psychological_assessments():
     # TODO: Implement logic to retrieve psychological assessments
