@@ -532,26 +532,152 @@ def update_project(project_id, project_data):
         conn.close()
 
 def create_team(team_data):
-    # TODO: Implement logic to create a team
-    # 1. Connect to the database
-    # 2. Insert team_data into the team table
-    # 3. Return the ID of the newly created team
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            # Insert team data into the teams table
+            query = """
+            INSERT INTO teams (name, description)
+            VALUES (%s, %s)
+            RETURNING id
+            """
+            cursor.execute(query, (team_data['name'].lower(), team_data['description'].lower()))
+            team_id = cursor.fetchone()[0]
+            for employee_id in team_data['employees'].split(','):
+                cursor.execute("INSERT INTO team_employee (employee_id, team_id) VALUES (%s, %s)", 
+                               (employee_id.strip().lower(), team_id))
+            conn.commit()
+            response = {
+                "success": True,
+                "message": "Team created successfully",
+                "teamId": team_id
+            }
+            print(response)
+            return team_id
+    except psycopg2.Error as e:
+        logging.error(f"Error creating team: {e}")
+        response = {
+            "success": False,
+            "message": "Failed to create team",
+            "teamId": None
+        }
+        print(response)
+        return None
+    finally:
+        conn.close()
 
 def update_team(team_id, team_data):
-    # TODO: Implement logic to update a team
-    # 1. Connect to the database
-    # 2. Update the team table based on team_id with the relevant information
-    # 3. Return whether the update was successful
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            # Update team details in the teams table
+            query = """
+            UPDATE teams
+            SET name = %s, description = %s
+            WHERE id = %s
+            """
+            cursor.execute(query, (team_data['name'].lower(), team_data['description'].lower(), team_id))
+            cursor.execute("DELETE FROM team_employee WHERE team_id = %s", (team_id,))
+            for employee_id in team_data['employees'].split(','):
+                cursor.execute("INSERT INTO team_employee (employee_id, team_id) VALUES (%s, %s)", 
+                               (employee_id.strip().lower(), team_id))
+            conn.commit()
+            response = {
+                "success": True,
+                "message": "Team updated successfully"
+            }
+            print(response)
+            return True
+    except psycopg2.Error as e:
+        logging.error(f"Error updating team: {e}")
+        response = {
+            "success": False,
+            "message": "Failed to update team"
+        }
+        return response
+    finally:
+        conn.close()
 
 def add_financial_record(record_data):
-    # TODO: Implement logic to add a financial record
-    # 1. Connect to the database
-    # 2. Insert record_data into the financial records table
-    # 3. Return the ID of the newly created record
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
 
+    try:
+        # Create a cursor to execute SQL queries
+        with conn.cursor() as cur:
+            # Get the project ID from the project name
+            get_project_id_query = """
+            SELECT project_id FROM projects WHERE project_name = %s
+            """
+            cur.execute(get_project_id_query, (record_data['projectName'].lower(),))
+            project_id = cur.fetchone()
+            
+            if project_id is None:
+                return {
+                    "success": False,
+                    "message": f"Project '{record_data['projectName']}' not found.",
+                    "recordId": None
+                }
+            project_id = project_id[0]
+            # Initialize a list to store newly added record IDs
+            added_record_ids = [] 
+            # Check if earning is present and non-zero
+            if 'earning' in record_data and record_data['earning'] > 0:
+                # Insert the financial record into the financial_records table
+                cur.execute("""
+                INSERT INTO financial_records (project_id, amount, category, timestamp)
+                VALUES (%s, %s, %s, %s)
+                RETURNING item_id
+                """, (project_id, record_data['earning'], 'Income', record_data['timestamp']))
+                record_id = cur.fetchone()[0]
+                added_record_ids.append(record_id)
+            #check if cost is present and non-zero
+            if 'cost' in record_data and record_data['cost'] > 0:
+                # Insert the financial record into the financial_records table
+                cur.execute("""
+                INSERT INTO financial_records (project_id, amount, category, timestamp)
+                VALUES (%s, %s, %s, %s)
+                RETURNING item_id
+                """, (project_id, record_data['cost'], 'Expense', record_data['timestamp']))
+                record_id = cur.fetchone()[0]
+                added_record_ids.append(record_id)
+            # Commit the transaction
+            conn.commit()
+            if added_record_ids:
+                # Prepare success response if records were added
+                response = {
+                    "success": True,
+                    "message": "Financial record(s) added successfully",
+                    "recordId": ', '.join(map(str, added_record_ids))  # List of added record IDs
+                }
+            else:
+                # No records were added
+                response = {
+                    "success": False,
+                    "message": "No financial records were added (earning or cost is 0).",
+                    "recordId": None
+                }
+            
+            return response
+    except psycopg2.Error as e:
+        logging.error(f"Error adding financial record: {e}")
+        return {
+            "success": False,
+            "message": "Failed to add financial record",
+            "recordId": None
+        }
+    finally:
+        conn.close()
 def submit_psychological_assessment(assessment_data):
     # TODO: Implement logic to submit a psychological assessment
     # 1. Connect to the database
