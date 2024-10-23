@@ -1,133 +1,206 @@
 from flask import Flask, jsonify, request
-from datetime import datetime, timedelta
-import random
+from database import *
+from agent import process_ai_secretary, process_personal_savings, process_mental_health
 
 app = Flask(__name__)
 
-# Mock data
-projects = [
-    {"id": "1", "name": "Project A", "description": "Description for Project A", "deadline": "2023-12-31", "employees": ["1", "2"], "totalEarning": 10000, "totalDuration": 100},
-    {"id": "2", "name": "Project B", "description": "Description for Project B", "deadline": "2023-11-30", "employees": ["2", "3"], "totalEarning": 15000, "totalDuration": 150},
-]
-
-teams = [
-    {"id": "1", "name": "Team X", "description": "Description for Team X", "employees": ["1", "2"], "totalEarning": 25000, "totalDuration": 250, "teamEfficiency": 100},
-    {"id": "2", "name": "Team Y", "description": "Description for Team Y", "employees": ["3", "4"], "totalEarning": 30000, "totalDuration": 300, "teamEfficiency": 100},
-]
-
-employees = [
-    {"id": "1", "name": "John Doe", "totalWorkDuration": 500, "numberOfProjects": 2},
-    {"id": "2", "name": "Jane Smith", "totalWorkDuration": 450, "numberOfProjects": 3},
-]
-
-financial_records = [
-    {"id": "1", "projectName": "Project A", "earning": 5000, "cost": 3000, "employeeName": "John Doe", "timestamp": "2023-05-01T10:00:00Z"},
-    {"id": "2", "projectName": "Project B", "earning": 7000, "cost": 4000, "employeeName": "Jane Smith", "timestamp": "2023-05-02T11:00:00Z"},
-]
-
-psychological_assessments = [
-    {"id": "1", "assessment": "Assessment for John Doe", "timestamp": "2023-05-01T09:00:00Z"},
-    {"id": "2", "assessment": "Assessment for Jane Smith", "timestamp": "2023-05-02T10:00:00Z"},
-]
-
-feedback_history = [
-    {"id": "1", "employeeName": "John Doe", "content": "Great work environment", "timestamp": "2023-05-01T14:00:00Z"},
-    {"id": "2", "employeeName": "Jane Smith", "content": "Excellent team collaboration", "timestamp": "2023-05-02T15:00:00Z"},
-]
-
-clock_in_records = [
-    {"id": "1", "projectName": "Project A", "startTime": "2023-05-01T09:00:00Z", "endTime": "2023-05-01T17:00:00Z", "duration": 8},
-    {"id": "2", "projectName": "Project B", "startTime": "2023-05-02T08:30:00Z", "endTime": "2023-05-02T16:30:00Z", "duration": 8},
-]
-
-# Routes
-
 @app.route('/api/login', methods=['POST'])
 def login():
-    # Mock login functionality
     data = request.json
     username = data.get('username', '').lower()
     password = data.get('password', '')
     
-    # Test login: print received username and password
-    print(f"#test login - Received username: {username}, password: {password}")  # Added for debugging
+    user_data = check_login(username, password)
     
-    # In a real application, you would verify the credentials against a database
-    if username == 'manager' and password == 'password':
-        role = 'manager'
-    elif username == 'hr' and password == 'password':
-        role = 'hr'
-    elif username == 'employee' and password == 'password':
-        role = 'employee'
+    if user_data:
+        return jsonify({
+            "success": True,
+            "message": "Login successful",
+            "role": user_data['role']
+        }), 200
     else:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
-    return jsonify({"success": True, "message": "Login successful", "role": role, "token": "mock_token_12345"})
-
 @app.route('/api/projects', methods=['GET'])
-def get_projects():
-    # Return mock projects data
-    return jsonify({"projects": projects})
+def get_projects_route():
+    projects = get_projects()
+    if projects is None:
+        return jsonify({"success": False, "message": "Failed to retrieve projects"}), 500
+    return jsonify({"success": True, "projects": projects}), 200
 
 @app.route('/api/projects/<project_id>', methods=['GET'])
-def get_project_details(project_id):
-    # Find the project with the given ID
-    project = next((p for p in projects if p['id'] == project_id), None)
-    if project:
-        return jsonify({"projectDetails": project})
-    return jsonify({"error": "Project not found"}), 404
+def get_project_details_route(project_id):
+    project = get_project_details(project_id)
+    if project is None:
+        return jsonify({"success": False, "message": "Project not found"}), 404
+    return jsonify({"success": True, "projectDetails": project}), 200
 
 @app.route('/api/teams', methods=['GET'])
-def get_teams():
-    # Return mock teams data
-    return jsonify({"teams": teams})
+def get_teams_route():
+    teams = get_teams()
+    if teams is None:
+        return jsonify({"success": False, "message": "Failed to retrieve teams"}), 500
+    return jsonify({"success": True, "teams": teams}), 200
 
 @app.route('/api/teams/<team_id>', methods=['GET'])
-def get_team_details(team_id):
-    # Find the team with the given ID
-    team = next((t for t in teams if t['id'] == team_id), None)
-    if team:
-        return jsonify({"teamDetails": team})
-    return jsonify({"error": "Team not found"}), 404
+def get_team_details_route(team_id):
+    team = get_team_details(team_id)
+    if team is None:
+        return jsonify({"success": False, "message": "Team not found"}), 404
+    return jsonify({"success": True, "teamDetails": team}), 200
 
 @app.route('/api/financial-records', methods=['GET'])
-def get_financial_records():
-    # Return mock financial records
-    return jsonify({"records": financial_records})
+def get_financial_records_route():
+    records = get_financial_records()
+    if records is None:
+        return jsonify({"success": False, "message": "Failed to retrieve financial records"}), 500
+    return jsonify({"success": True, "records": records}), 200
 
 @app.route('/api/psychological-assessments', methods=['GET'])
-def get_psychological_assessments():
-    # Return mock psychological assessments
-    return jsonify({"assessments": psychological_assessments})
+def get_psychological_assessments_route():
+    assessments = get_psychological_assessments()
+    if assessments is None:
+        return jsonify({"success": False, "message": "Failed to retrieve psychological assessments"}), 500
+    return jsonify({"success": True, "assessments": assessments}), 200
 
 @app.route('/api/feedback', methods=['GET'])
-def get_feedback():
-    # Return mock feedback history
-    return jsonify({"feedbackHistory": feedback_history})
+def get_feedback_route():
+    feedback = get_feedback()
+    if feedback is None:
+        return jsonify({"success": False, "message": "Failed to retrieve feedback"}), 500
+    return jsonify({"success": True, "feedback": feedback}), 200
 
 @app.route('/api/clock-in-records', methods=['GET'])
-def get_clock_in_records():
-    # Return mock clock-in records
-    return jsonify({"records": clock_in_records})
+def get_clock_in_records_route():
+    records = get_clock_in_records()
+    if records is None:
+        return jsonify({"success": False, "message": "Failed to retrieve clock-in records"}), 500
+    return jsonify({"success": True, "records": records}), 200
 
 @app.route('/api/employees', methods=['GET'])
-def get_employees():
-    # Return mock employees data
-    return jsonify({"employees": employees})
+def get_employees_route():
+    employees = get_employees()
+    if employees is None:
+        return jsonify({"success": False, "message": "Failed to retrieve employees"}), 500
+    return jsonify({"success": True, "employees": employees}), 200
 
 @app.route('/api/employee-time-analysis', methods=['GET'])
-def get_employee_time_analysis():
-    # Generate mock time analysis data
-    time_analysis = [
-        {
-            "id": emp["id"],
-            "name": emp["name"],
-            "weeklyHours": random.randint(30, 50),
-            "monthlyHours": random.randint(120, 200)
-        }
-        for emp in employees
-    ]
-    return jsonify({"employees": time_analysis})
+def get_employee_time_analysis_route():
+    time_analysis = get_employee_time_analysis()
+    if time_analysis is None:
+        return jsonify({"success": False, "message": "Failed to retrieve employee time analysis"}), 500
+    return jsonify({"success": True, "timeAnalysis": time_analysis}), 200
+
+@app.route('/api/ai-secretary', methods=['POST'])
+def ai_secretary_route():
+    data = request.json
+    result = process_ai_secretary(data.get('message'), data.get('userId'))
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to process AI secretary request"}), 500
+    return jsonify({"success": True, "reply": result}), 200
+
+@app.route('/api/personal-savings', methods=['POST'])
+def personal_savings_route():
+    data = request.json
+    result = process_personal_savings(data.get('message'), data.get('userId'))
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to process personal savings request"}), 500
+    return jsonify({"success": True, "reply": result.get('reply'), "savingsData": result.get('savingsData', {})}), 200
+
+@app.route('/api/mental-health', methods=['POST'])
+def mental_health_route():
+    data = request.json
+    result = process_mental_health(data.get('message'), data.get('employeeId'))
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to process mental health request"}), 500
+    return jsonify({"success": True, "reply": result.get('reply'), "mentalHealthStatus": result.get('mentalHealthStatus', {})}), 200
+
+@app.route('/api/projects', methods=['POST'])
+def create_project_route():
+    data = request.json
+    result = create_project(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to create project"}), 500
+    return jsonify({"success": True, "message": "Project created", "projectId": result}), 201
+
+@app.route('/api/projects/<project_id>', methods=['PUT'])
+def update_project_route(project_id):
+    data = request.json
+    result = update_project(data, project_id)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to update project"}), 500
+    return jsonify({"success": True, "message": "Project updated"}), 200
+
+@app.route('/api/teams', methods=['POST'])
+def create_team_route():
+    data = request.json
+    result = create_team(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to create team"}), 500
+    return jsonify({"success": True, "message": "Team created", "teamId": result}), 201
+
+@app.route('/api/teams/<team_id>', methods=['PUT'])
+def update_team_route(team_id):
+    data = request.json
+    result = update_team(data, team_id)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to update team"}), 500
+    return jsonify({"success": True, "message": "Team updated"}), 200
+
+@app.route('/api/financial-records', methods=['POST'])
+def add_financial_record_route():
+    data = request.json
+    result = add_financial_record(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to add financial record"}), 500
+    return jsonify({"success": True, "message": "Financial record added", "recordId": result}), 201
+
+@app.route('/api/psychological-assessments', methods=['POST'])
+def submit_psychological_assessment_route():
+    data = request.json
+    result = submit_psychological_assessment(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to submit psychological assessment"}), 500
+    return jsonify({"success": True, "message": "Assessment submitted", "assessmentId": result}), 201
+
+@app.route('/api/feedback', methods=['POST'])
+def submit_feedback_route():
+    data = request.json
+    result = submit_feedback(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to submit feedback"}), 500
+    return jsonify({"success": True, "message": "Feedback submitted", "feedbackId": result}), 201
+
+@app.route('/api/employees', methods=['POST'])
+def add_employee_route():
+    data = request.json
+    result = add_employee(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to add employee"}), 500
+    return jsonify({"success": True, "message": "Employee added", "employeeId": result}), 201
+
+@app.route('/api/time-tracking', methods=['GET'])
+def get_time_tracking_data_route():
+    result = get_time_tracking_data()
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to retrieve time tracking data"}), 500
+    return jsonify({"success": True, "records": result}), 200
+
+@app.route('/api/time-tracking', methods=['POST'])
+def add_time_tracking_record_route():
+    data = request.json
+    result = add_time_tracking_record(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to add time tracking record"}), 500
+    return jsonify({"success": True, "message": "Time tracking record added", "recordId": result}), 201
+
+@app.route('/api/clock-in', methods=['POST'])
+def submit_clock_in_route():
+    data = request.json
+    result = submit_clock_in(data)
+    if result is None:
+        return jsonify({"success": False, "message": "Failed to submit clock-in record"}), 500
+    return jsonify({"success": True, "message": "Clock-in record submitted", "recordId": result}), 201
 
 if __name__ == '__main__':
     app.run(debug=True)

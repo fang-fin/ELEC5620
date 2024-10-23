@@ -28,7 +28,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
         console.log('Login successful:', data); // Debug log
         setIsLoggedIn(true);
         setUserRole(data.role);
-        localStorage.setItem('token', data.token);
+        // 移除 localStorage.setItem('token', data.token);
         navigate('/chat');
       } else {
         const errorData = await response.json();
