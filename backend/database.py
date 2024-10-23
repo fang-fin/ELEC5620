@@ -82,11 +82,54 @@ def get_projects():
         conn.close()
 
 def get_project_details(project_id):
-    # TODO: Implement logic to retrieve specific project details
-    # 1. Connect to the database
-    # 2. Query the project table based on project_id to get detailed project information
-    # 3. Return project details
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            # Fetch project details including duration based on start_date and deadline
+            query = """
+            SELECT p.project_id, p.project_name, p.description, p.deadline, p.start_date,
+                   SUM(e.salary * ep.hours_worked) AS total_earning, 
+                   EXTRACT(EPOCH FROM (p.deadline - p.start_date)) / 3600 AS total_duration
+            FROM projects p
+            LEFT JOIN employee_project ep ON p.project_id = ep.project_id
+            LEFT JOIN employee e ON e.employee_id = ep.employee_id
+            WHERE p.project_id = %s
+            GROUP BY p.project_id
+            """
+            cursor.execute(query, (project_id,))
+            project = cursor.fetchone()
+
+            if project:
+                # Fetch employees working on the project
+                employee_query = """
+                SELECT e.employee_id 
+                FROM employee_project ep
+                JOIN employee e ON e.employee_id = ep.employee_id
+                WHERE ep.project_id = %s
+                """
+                cursor.execute(employee_query, (project_id,))
+                employees = [row[0] for row in cursor.fetchall()]
+
+                return {
+                    "id": str(project[0]),
+                    "name": project[1],
+                    "description": project[2],
+                    "deadline": project[3].isoformat(),  # Convert to ISO 8601 format
+                    "employees": employees,
+                    "totalEarning": float(project[5]) if project[5] else 0.0,
+                    "totalDuration": float(project[6]) if project[6] else 0.0  # Duration in hours
+                }
+            else:
+                return None
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching project details: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_teams():
     # TODO: Implement logic to retrieve all teams
