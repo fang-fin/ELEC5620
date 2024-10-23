@@ -6,20 +6,26 @@ app = Flask(__name__)
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
-    username = data.get('username', '').lower()
-    password = data.get('password', '')
-    
-    user_data = check_login(username, password)
-    
-    if user_data:
-        return jsonify({
-            "success": True,
-            "message": "Login successful",
-            "role": user_data['role']
-        }), 200
-    else:
-        return jsonify({"success": False, "message": "Invalid credentials"}), 401
+    try:
+        data = request.json
+        username = data.get('username', '')  
+        password = data.get('password', '')
+
+        print(f"#test login - Received username: {username}, password: {password}")  # Added for debugging
+
+        user = check_login(username, password)
+        
+        if not user:
+            print("#test login - Invalid credentials")  # Added for debugging
+            return jsonify({"success": False, "message": "Invalid credentials"}), 401
+
+        role = user.get('role')
+        print(f"#test login - User role: {role}")  # Added for debugging
+        
+        return jsonify({"success": True, "message": "Login successful", "role": role})
+    except Exception as e:
+        print(f"#test login - Exception: {e}")  # Added for debugging
+        return jsonify({"success": False, "message": "Internal server error"}), 500
 
 @app.route('/api/projects', methods=['GET'])
 def get_projects_route():
