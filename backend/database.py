@@ -132,11 +132,37 @@ def get_project_details(project_id):
         conn.close()
 
 def get_teams():
-    # TODO: Implement logic to retrieve all teams
-    # 1. Connect to the database
-    # 2. Query the team table to get all team information
-    # 3. Return the list of teams
-    pass
+    conn = openConnection()  
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            #Query the team table to get all team information
+            query = """
+            SELECT team_id, name
+            FROM teams
+            """
+            cursor.execute(query)
+            teams = cursor.fetchall()
+
+            #Return the list of teams
+            if teams:
+                team_list = []
+                for team in teams:
+                    team_list.append({
+                        'id': str(team[0]),  # convert to string
+                        'name': team[1]
+                    })
+                
+                return {
+                    "teams": team_list
+                }
+            else:
+                return {
+                    "teams": []
+                }
 
 def get_team_details(team_id):
     # TODO: Implement logic to retrieve specific team details
