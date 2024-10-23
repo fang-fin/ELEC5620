@@ -23,11 +23,34 @@ def openConnection():
         return conn
 
 def check_login(username, password):
-    # TODO: Implement user authentication logic
-    # 1. Connect to the database
-    # 2. Query the user table to verify username and password
-    # 3. Return user role information
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT firstName, lastName, role 
+            FROM users 
+            WHERE user_id = %s AND password = %s
+            """
+            cursor.execute(query, (user_id, password))
+            user = cursor.fetchone()
+
+            if user:
+                return {
+                    'firstName': user[0],
+                    'lastName': user[1],
+                    'role': user[2]
+                }
+            else:
+                return None
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching user: {e}")
+        return None
+    finally:
+        conn.close() 
 
 def get_projects():
     # TODO: Implement logic to retrieve all projects
