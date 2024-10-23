@@ -4,7 +4,7 @@ function EmployeeManagement() {
   const [employeeName, setEmployeeName] = useState('');
   const [employeeAge, setEmployeeAge] = useState('');
   const [employeeGender, setEmployeeGender] = useState('');
-  const [employeeRole, setEmployeeRole] = useState('');  // 新增：员工角色
+  const [employeeRole, setEmployeeRole] = useState(''); 
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ function EmployeeManagement() {
           name: employeeName,
           age: parseInt(employeeAge),
           gender: employeeGender,
-          role: employeeRole  // 新增：包含员工角色
+          role: employeeRole  
         }),
       });
       if (response.ok) {
@@ -41,7 +41,7 @@ function EmployeeManagement() {
         setEmployeeName('');
         setEmployeeAge('');
         setEmployeeGender('');
-        setEmployeeRole('');  // 重置角色选择
+        setEmployeeRole('');
         fetchEmployees();
       } else {
         alert('Failed to add employee');
