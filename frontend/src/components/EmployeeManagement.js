@@ -14,9 +14,10 @@ function EmployeeManagement() {
     try {
       const response = await fetch('/api/employees');
       const data = await response.json();
-      setEmployees(data.employees);
+      setEmployees(data.employees || []); // Fallback to an empty array if data.employees is undefined
     } catch (error) {
       console.error('Error fetching employees:', error);
+      setEmployees([]); // Ensure employees is always an array even when there's an error
     }
   };
 
