@@ -30,7 +30,7 @@ function FeedbackMechanism() {
         body: JSON.stringify({
           content: feedback,
           timestamp: new Date().toISOString(),
-          userId: userId // 包含用户ID
+          userId: userId 
         }),
       });
       if (response.ok) {

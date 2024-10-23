@@ -28,7 +28,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
         console.log('Login successful:', data);
         setIsLoggedIn(true);
         setUserRole(data.role);
-        localStorage.setItem('userId', data.userId); // 存储用户ID
+        localStorage.setItem('userId', data.userId); 
         navigate('/chat');
       } else {
         const errorData = await response.json();

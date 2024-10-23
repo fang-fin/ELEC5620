@@ -33,7 +33,7 @@ function PsychologicalAssessment() {
         body: JSON.stringify({
           assessment: combinedText,
           timestamp: new Date().toISOString(),
-          userId: userId // 包含用户ID
+          userId: userId 
         }),
       });
       if (response.ok) {
