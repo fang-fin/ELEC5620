@@ -477,7 +477,8 @@ json
 {
 "name": string,
 "age": number,
-"gender": string
+"gender": string,
+"role": string  // 'manager', 'hr
 }
 
 **Response Body:**
@@ -657,5 +658,6 @@ json
 ## Version Control
 
 This API is versioned. The current version is v1. When making changes, consider backwards compatibility or create a new version if breaking changes are necessary.
+
 
 

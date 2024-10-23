@@ -179,20 +179,20 @@ def add_employee_route():
         return jsonify({"success": False, "message": "Failed to add employee"}), 500
     return jsonify({"success": True, "message": "Employee added", "employeeId": result}), 201
 
-@app.route('/api/time-tracking', methods=['GET'])
-def get_time_tracking_data_route():
-    result = get_time_tracking_data()
-    if result is None:
-        return jsonify({"success": False, "message": "Failed to retrieve time tracking data"}), 500
-    return jsonify({"success": True, "records": result}), 200
+# @app.route('/api/time-tracking', methods=['GET'])
+# def get_time_tracking_data_route():
+#     result = get_time_tracking_data()
+#     if result is None:
+#         return jsonify({"success": False, "message": "Failed to retrieve time tracking data"}), 500
+#     return jsonify({"success": True, "records": result}), 200
 
-@app.route('/api/time-tracking', methods=['POST'])
-def add_time_tracking_record_route():
-    data = request.json
-    result = add_time_tracking_record(data)
-    if result is None:
-        return jsonify({"success": False, "message": "Failed to add time tracking record"}), 500
-    return jsonify({"success": True, "message": "Time tracking record added", "recordId": result}), 201
+# @app.route('/api/time-tracking', methods=['POST'])
+# def add_time_tracking_record_route():
+#     data = request.json
+#     result = add_time_tracking_record(data)
+#     if result is None:
+#         return jsonify({"success": False, "message": "Failed to add time tracking record"}), 500
+#     return jsonify({"success": True, "message": "Time tracking record added", "recordId": result}), 201
 
 @app.route('/api/clock-in', methods=['POST'])
 def submit_clock_in_route():
