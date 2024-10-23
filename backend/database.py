@@ -320,11 +320,39 @@ def get_feedback():
         conn.close()
 
 def get_clock_in_records():
-    # TODO: Implement logic to retrieve clock-in records
-    # 1. Connect to the database
-    # 2. Query the clock-in records table to get all clock-in records
-    # 3. Return the list of clock-in records
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT cir.clock_in_id, p.project_name, cir.start_time, cir.end_time, cir.duration
+            FROM clock_in_records cir
+            JOIN projects p ON cir.project_id = p.project_id
+            """
+            cursor.execute(query)
+            records = cursor.fetchall()
+
+            records_list = []
+            for record in records:
+                records_list.append({
+                    'id': str(record[0]), 
+                    'projectName': record[1],  
+                    'startTime': record[2].isoformat(),  
+                    'endTime': record[3].isoformat(), 
+                    'duration': float(record[4]) 
+                })
+
+            return {
+                'records': records_list
+            }
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching clock-in records: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_employees():
     # TODO: Implement logic to retrieve all employees
