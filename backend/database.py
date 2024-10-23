@@ -679,18 +679,78 @@ def add_financial_record(record_data):
     finally:
         conn.close()
 def submit_psychological_assessment(assessment_data):
-    # TODO: Implement logic to submit a psychological assessment
-    # 1. Connect to the database
-    # 2. Insert assessment_data into the psychological assessment table
-    # 3. Return the ID of the newly created assessment
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+    try:
+         # Retrieve the current user's employee_id
+        employee_id = get_current_employee_id()
+        with conn.cursor() as cursor:
+            # Insert the psychological assessment into the psychological_assessments table
+            query = """
+            INSERT INTO psychological_assessments (employee_id, assessment, timestamp)
+            VALUES (%s, %s, %s)
+            RETURNING psy_id
+            """
+            cursor.execute(query, (employee_id, assessment_data['assessment'].lower(), assessment_data['timestamp']))
+            assessment_id = cursor.fetchone()[0]
+            conn.commit()
+            response = {
+                "success": True,
+                "message": "Assessment submitted successfully",
+                "assessmentId": assessment_id
+            }
+            print(response)
+            return assessment_id
+    except psycopg2.Error as e:
+        logging.error(f"Error submitting psychological assessment: {e}")
+        response = {
+            "success": False,
+            "message": "Failed to submit assessment",
+            "assessmentId": None
+        }
+        print(response)
+        return None
+    finally:
+        conn.close()
 
 def submit_feedback(feedback_data):
-    # TODO: Implement logic to submit feedback
-    # 1. Connect to the database
-    # 2. Insert feedback_data into the feedback table
-    # 3. Return the ID of the newly created feedback
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+    try:
+        # Retrieve the current user's employee_id
+        employee_id = get_current_employee_id()
+        with conn.cursor() as cursor:
+            # Insert the feedback into the feedback table
+            query = """
+            INSERT INTO feedback (employee_id, feedback_content, timestamp)
+            VALUES (%s, %s, %s)
+            RETURNING feedback_id
+            """
+            cursor.execute(query, (employee_id, feedback_data['content'].lower(), feedback_data['timestamp']))
+            feedback_id = cursor.fetchone()[0]
+            conn.commit()
+            response = {
+                "success": True,
+                "message": "Feedback submitted successfully",
+                "feedbackId": feedback_id
+            }
+            print(response)
+            return feedback_id
+    except psycopg2.Error as e:
+        logging.error(f"Error submitting feedback: {e}")
+        response = {
+            "success": False,
+            "message": "Failed to submit feedback",
+            "feedbackId": None
+        }
+        print(response)
+        return None
+    finally:
+        conn.close()
 
 def add_employee(employee_data):
     # TODO: Implement logic to add an employee
