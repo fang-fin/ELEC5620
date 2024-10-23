@@ -355,11 +355,39 @@ def get_clock_in_records():
         conn.close()
 
 def get_employees():
-    # TODO: Implement logic to retrieve all employees
-    # 1. Connect to the database
-    # 2. Query the employee table to get all employee information
-    # 3. Return the list of employees
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT e.employee_id, u.firstname || ' ' || u.lastname AS name, 
+                   e.total_work_duration, e.number_of_projects
+            FROM employee e
+            JOIN users u ON e.employee_id = u.user_id
+            """
+            cursor.execute(query)
+            employees = cursor.fetchall()
+
+            employees_list = []
+            for employee in employees:
+                employees_list.append({
+                    'id': str(employee[0]),
+                    'name': employee[1],  
+                    'totalWorkDuration': float(employee[2]),  
+                    'numberOfProjects': int(employee[3]) 
+                })
+
+            return {
+                'employees': employees_list
+            }
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching employees: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_employee_time_analysis():
     # TODO: Implement logic to retrieve employee time analysis
