@@ -389,12 +389,57 @@ def get_employees():
     finally:
         conn.close()
 
+from datetime import datetime
+
 def get_employee_time_analysis():
-    # TODO: Implement logic to retrieve employee time analysis
-    # 1. Connect to the database
-    # 2. Query the clock-in records table to calculate working hours for each employee
-    # 3. Return employee time analysis results
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            query = """
+            SELECT u.user_id, u.firstname || ' ' || u.lastname AS name, 
+                   u.date AS start_date, SUM(cir.duration) AS total_hours
+            FROM users u
+            LEFT JOIN clock_in_records cir ON u.user_id = cir.employee_id
+            WHERE u.role = 'employee'
+            GROUP BY u.user_id, u.firstname, u.lastname, u.date
+            """
+            cursor.execute(query)
+            employees = cursor.fetchall()
+
+            current_date = datetime.now()
+
+            employees_list = []
+            for employee in employees:
+                employee_id = employee[0]
+                name = employee[1]
+                start_date = employee[2]
+                total_hours = float(employee[3]) if employee[3] else 0.0
+
+                weeks_worked = (current_date - start_date).days / 7
+                months_worked = (current_date - start_date).days / 30.44  
+
+                weekly_hours = total_hours / weeks_worked if weeks_worked > 0 else 0
+                monthly_hours = total_hours / months_worked if months_worked > 0 else 0
+
+                employees_list.append({
+                    'id': str(employee_id),
+                    'name': name,
+                    'weeklyHours': round(weekly_hours, 2), 
+                    'monthlyHours': round(monthly_hours, 2) 
+                })
+
+            return {
+                'employees': employees_list
+            }
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching employee time analysis: {e}")
+        return None
+    finally:
+        conn.close()
 
 def create_project(project_data):
     # TODO: Implement logic to create a project
