@@ -250,11 +250,39 @@ def get_financial_records():
 
 
 def get_psychological_assessments():
-    # TODO: Implement logic to retrieve psychological assessments
-    # 1. Connect to the database
-    # 2. Query the psychological assessment table to get all assessment records
-    # 3. Return the list of psychological assessments
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            # Query to get psychological assessments
+            query = """
+            SELECT psy_id, assessment, "timestamp"
+            FROM psychological_assessments
+            """
+            cursor.execute(query)
+            assessments = cursor.fetchall()
+
+            # Format the response as a list of dictionaries
+            assessments_list = []
+            for assessment in assessments:
+                assessments_list.append({
+                    'id': str(assessment[0]),  # psy_id as a string
+                    'assessment': assessment[1],  # assessment text
+                    'timestamp': assessment[2].isoformat()  # ISO 8601 formatted timestamp
+                })
+
+            return {
+                'assessments': assessments_list
+            }
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching psychological assessments: {e}")
+        return None
+    finally:
+        conn.close()
+
 
 def get_feedback():
     # TODO: Implement logic to retrieve feedback
