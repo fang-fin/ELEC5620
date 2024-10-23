@@ -6,6 +6,7 @@ function Sidebar({ setSelectedFunction, setIsLoggedIn, userRole }) {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    localStorage.removeItem('userId');
     navigate('/login');
   };
 

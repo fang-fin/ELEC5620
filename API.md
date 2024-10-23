@@ -359,7 +359,8 @@ json
 json
 {
 "assessment": string,
-"timestamp": string (ISO 8601 date-time format)
+"timestamp": string (ISO 8601 date-time format),
+"userId": string
 }
 **Response Body:**
 json
@@ -404,7 +405,8 @@ json
 json
 {
 "content": string,
-"timestamp": string (ISO 8601 date-time format)
+"timestamp": string (ISO 8601 date-time format),
+"userId": string
 }
 
 **Response Body:**
@@ -572,7 +574,8 @@ json
 {
 "success": boolean,
 "message": string,
-"role": string
+"role": string,
+"userId": string
 }
 **Notes:**
 - The username comparison should be case-insensitive. Convert the input username to lowercase before comparing with the database.

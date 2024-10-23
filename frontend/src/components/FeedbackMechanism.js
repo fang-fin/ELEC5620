@@ -20,6 +20,7 @@ function FeedbackMechanism() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const userId = localStorage.getItem('userId'); // 获取用户ID
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
@@ -28,7 +29,8 @@ function FeedbackMechanism() {
         },
         body: JSON.stringify({
           content: feedback,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          userId: userId 
         }),
       });
       if (response.ok) {
