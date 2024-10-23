@@ -170,11 +170,39 @@ def get_teams():
         conn.close()
         
 def get_team_details(team_id):
-    # TODO: Implement logic to retrieve specific team details
-    # 1. Connect to the database
-    # 2. Query the team table based on team_id to get detailed team information
-    # 3. Return team details
-    pass
+    conn = openConnection()
+    if not conn:
+        logging.error("Failed to connect to the database.")
+        return None
+
+    try:
+        with conn.cursor() as cursor:
+            # Query to get the details of the team by team_id
+            query = """
+            SELECT id, name, description, total_earning, total_duration, team_efficiency
+            FROM teams
+            WHERE id = %s
+            """
+            cursor.execute(query, (team_id,))
+            team = cursor.fetchone()
+
+            if team:
+                # Format the response as a dictionary with team details
+                return {
+                    'id': str(team[0]),  # Ensuring 'id' is returned as a string
+                    'name': team[1],
+                    'description': team[2],
+                    'totalEarning': float(team[3]) if team[3] else 0.0,
+                    'totalDuration': int(team[4]) if team[4] else 0,
+                    'teamEfficiency': int(team[5]) if team[5] else 0
+                }
+            else:
+                return None
+    except psycopg2.Error as e:
+        logging.error(f"Error fetching team details: {e}")
+        return None
+    finally:
+        conn.close()
 
 def get_financial_records():
     # TODO: Implement logic to retrieve financial records
