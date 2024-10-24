@@ -2,10 +2,6 @@
 import psycopg2
 import logging 
 
-#####################################################
-##  Database Connection
-#####################################################
-
 def openConnection():
 
     database_name = "elec5620"
@@ -291,14 +287,15 @@ def get_feedback():
     if not conn:
         logging.error("Failed to connect to the database.")
         return None
-
+    logging.info("Connected to the database successfully")
     try:
         with conn.cursor() as cursor:
             query = """
-            SELECT f.feedback_id, e.firstname || ' ' || e.lastname AS employee_name, 
+            SELECT f.feedback_id, u.firstname || ' ' || u.lastname AS employee_name, 
                    f.feedback_content, f."timestamp"
             FROM feedback f
             JOIN employee e ON f.employee_id = e.employee_id
+            JOIN users u ON e.employee_id = u.user_id
             """
             cursor.execute(query)
             feedbacks = cursor.fetchall()
@@ -313,7 +310,8 @@ def get_feedback():
                 })
 
             return {
-                'feedbackHistory': feedback_list
+                'employees': feedback_list, 
+                'success': True
             }
     except psycopg2.Error as e:
         logging.error(f"Error fetching feedback: {e}")
@@ -362,36 +360,47 @@ def get_employees():
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {'error': 'Failed to connect to the database'}
 
     try:
         with conn.cursor() as cursor:
             query = """
             SELECT e.employee_id, u.firstname || ' ' || u.lastname AS name, 
-                   e.total_work_duration, e.number_of_projects
+                   u.age, u.gender, u.role, e.total_work_duration, e.number_of_projects
             FROM employee e
             JOIN users u ON e.employee_id = u.user_id
             """
             cursor.execute(query)
             employees = cursor.fetchall()
 
-            employees_list = []
-            for employee in employees:
-                employees_list.append({
-                    'id': str(employee[0]),
-                    'name': employee[1],  
-                    'totalWorkDuration': float(employee[2]),  
-                    'numberOfProjects': int(employee[3]) 
-                })
+            if not employees: 
+                return {'error': 'No employees found'}
 
-            return {
-                'employees': employees_list
-            }
+            employees_list = [
+                {
+                    'id': str(employee[0]),
+                    'name': employee[1],
+                    'age': int(employee[2]) if employee[2] is not None else None,
+                    'gender': employee[3] if employee[3] is not None else 'N/A',
+                    'role': employee[4] if employee[4] is not None else 'N/A',
+                    'totalWorkDuration': float(employee[5]) if employee[5] is not None else 0.0,
+                    'numberOfProjects': int(employee[6]) if employee[6] is not None else 0
+                }
+                for employee in employees
+            ]
+            logging.debug(f"Employees List: {employees_list}") 
+            return {'employees': employees_list,
+                    'success': True}
+    
     except psycopg2.Error as e:
         logging.error(f"Error fetching employees: {e}")
-        return None
+        return {'error': f"Error fetching employees: {str(e)}"}
+    
     finally:
-        conn.close()
+        if conn:
+            conn.close()
+
+
 
 
 from datetime import datetime, timedelta
@@ -763,16 +772,57 @@ def submit_feedback(feedback_data):
     finally:
         conn.close()
 
+# assign user_id by concatenating first letter of first name with last name
+# initialize password as 'password' for all new employees
+# split name into first name and last name, insert user_id, name, age, gender to the users table;
 def add_employee(employee_data):
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {'message': 'Failed to connect to the database', 'success': False}
+    
+    try:
+        with conn.cursor() as cursor:
+            name = employee_data['name']
+            age = employee_data['age']
+            gender = employee_data['gender']
+            role = employee_data['role']
+            salary = employee_data.get('salary', 40000)  
+            password = 'password'  
+            
+            name_parts = name.split()
+            first_name = ' '.join(name_parts[:-1])
+            last_name = name_parts[-1] if len(name_parts) > 1 else ''
+            user_id = first_name[0].lower() + last_name.lower() if last_name else first_name.lower()
+            
+            logging.info(f"Executing query: {insert_employee_query} with values: ({user_id}, 0, 0)")
 
-        # assign user_id by concatenating first letter of first name with last name
-        # initialize password as 'password' for all new employees
-        # split name into first name and last name, insert user_id, name, age, gender to the users table;
-        # role is employee by default
+            insert_user_query = """
+            INSERT INTO users (user_id, firstname, lastname, age, salary, gender, role, password, date)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE)
+            """
+            cursor.execute(insert_user_query, (user_id, first_name, last_name, age, salary, gender, role, password))
+
+            insert_employee_query = """
+            INSERT INTO employee (employee_id, total_work_duration, number_of_projects)
+            VALUES (%s, %s, %s)
+            """
+            cursor.execute(insert_employee_query, (user_id, 0, 0))  
+            
+            conn.commit()
+            logging.info(f"Employee {user_id} inserted successfully.")
+            
+            return {'success': True, 'user_id': user_id}
+    
+    except psycopg2.Error as e:
+        logging.error(f"Error adding employee: {e}")
+        conn.rollback()  
+        return {'message': f"Error adding employee: {str(e)}", 'success': False}
+    
+    finally:
+        if conn:
+            conn.close()
+
 
 
 # def get_time_tracking_data():

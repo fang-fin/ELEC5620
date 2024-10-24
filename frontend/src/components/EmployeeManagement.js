@@ -13,13 +13,22 @@ function EmployeeManagement() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees');
-      const data = await response.json();
-      setEmployees(data.employees);
+        const response = await fetch('/api/employees');
+        const data = await response.json();
+        console.log('Fetched data:', data); // 查看获取的数据
+
+        // 修改这里以正确提取员工数据
+        if (data.success && data.employees && Array.isArray(data.employees.employees)) {
+            setEmployees(data.employees.employees);
+        } else {
+            console.warn('Unexpected data structure:', data); // 输出意外的数据结构
+            setEmployees([]); // 如果数据结构不对，设置为空数组
+        }
     } catch (error) {
-      console.error('Error fetching employees:', error);
+        console.error('Error fetching employees:', error); // 打印错误信息
     }
-  };
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +53,8 @@ function EmployeeManagement() {
         setEmployeeRole('');
         fetchEmployees();
       } else {
+        const errorData = await response.json();
+        console.error('Error response data:', errorData);
         alert('Failed to add employee');
       }
     } catch (error) {

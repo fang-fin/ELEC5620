@@ -9,13 +9,23 @@ function TimeAnalysis() {
 
   const fetchEmployeeTimeData = async () => {
     try {
-      const response = await fetch('/api/employee-time-analysis');
-      const data = await response.json();
-      setEmployeeData(data.employees);
+        const response = await fetch('/api/employee-time-analysis');
+        const data = await response.json();
+        
+        console.log('Fetched data:', data); // 输出获取的数据
+        
+        // 修改这里以正确提取员工数据
+        if (data.success && data.timeAnalysis && Array.isArray(data.timeAnalysis.employees)) {
+            setEmployeeData(data.timeAnalysis.employees);
+        } else {
+            console.warn('Unexpected data structure:', data); // 输出意外的数据结构
+            setEmployeeData([]); // 如果数据结构不对，设置为空数组
+        }
     } catch (error) {
-      console.error('Error fetching employee time data:', error);
+        console.error('Error fetching employee time data:', error);
     }
-  };
+};
+
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
