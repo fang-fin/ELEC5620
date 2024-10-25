@@ -10,16 +10,32 @@ function ClockIn() {
     fetchClockInRecords();
   }, []);
 
+  // const fetchClockInRecords = async () => {
+  //   try {
+  //     const response = await fetch('/api/clock-in-records');
+  //     const data = await response.json();
+  //     setClockInRecords(data.records);
+  //   } catch (error) {
+  //     console.error('Error fetching clock-in records:', error);
+  //   }
+  // };
   const fetchClockInRecords = async () => {
     try {
       const response = await fetch('/api/clock-in-records');
       const data = await response.json();
-      setClockInRecords(data.records);
+  
+      if (Array.isArray(data.clockInRecords)) {
+        setClockInRecords(data.clockInRecords);
+      } else {
+        console.error('clockInRecords is not an array', data);
+        setClockInRecords([]);  
+      }
     } catch (error) {
       console.error('Error fetching clock-in records:', error);
+      setClockInRecords([]);  
     }
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const start = new Date(startTime);

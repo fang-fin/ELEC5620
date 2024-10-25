@@ -15,17 +15,16 @@ function EmployeeManagement() {
     try {
         const response = await fetch('/api/employees');
         const data = await response.json();
-        console.log('Fetched data:', data); // 查看获取的数据
+        console.log('Fetched data:', data); 
 
-        // 修改这里以正确提取员工数据
         if (data.success && data.employees && Array.isArray(data.employees.employees)) {
             setEmployees(data.employees.employees);
         } else {
-            console.warn('Unexpected data structure:', data); // 输出意外的数据结构
-            setEmployees([]); // 如果数据结构不对，设置为空数组
+            console.warn('Unexpected data structure:', data); 
+            setEmployees([]); 
         }
     } catch (error) {
-        console.error('Error fetching employees:', error); // 打印错误信息
+        console.error('Error fetching employees:', error); 
     }
 };
 

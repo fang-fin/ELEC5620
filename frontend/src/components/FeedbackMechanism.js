@@ -8,15 +8,32 @@ function FeedbackMechanism() {
     fetchFeedbackHistory();
   }, []);
 
+  // const fetchFeedbackHistory = async () => {
+  //   try {
+  //     const response = await fetch('/api/feedback');
+  //     const data = await response.json();
+  //     setFeedbackHistory(data.feedbacks);
+  //   } catch (error) {
+  //     console.error('Error fetching feedback history:', error);
+  //   }
+  // };
   const fetchFeedbackHistory = async () => {
     try {
-      const response = await fetch('/api/feedback');
+      const response = await fetch('/api/feedbacks');
       const data = await response.json();
-      setFeedbackHistory(data.feedbacks);
+
+      if (Array.isArray(data.feedbacks)) {
+        setFeedbackHistory(data.feedbacks);
+      } else {
+        console.error('Feedbacks is not an array', data);
+        setFeedbackHistory([]);  
+      }
     } catch (error) {
-      console.error('Error fetching feedback history:', error);
+      console.error('Error fetching feedbacks:', error);
+      setFeedbackHistory([]);  
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();

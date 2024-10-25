@@ -258,7 +258,7 @@ def get_psychological_assessments():
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {'assessments': []}
 
     try:
         with conn.cursor() as cursor:
@@ -278,13 +278,13 @@ def get_psychological_assessments():
                     'assessment': assessment[1],  # assessment text
                     'timestamp': assessment[2].isoformat()  # ISO 8601 formatted timestamp
                 })
-
+            logging.info(f"Assessments list: {assessments_list}")
             return {
                 'assessments': assessments_list
             }
     except psycopg2.Error as e:
         logging.error(f"Error fetching psychological assessments: {e}")
-        return None
+        return {'assessments': []}
     finally:
         conn.close()
 
