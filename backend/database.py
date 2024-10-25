@@ -726,32 +726,47 @@ def submit_psychological_assessment(assessment_data):
     if not conn:
         logging.error("Failed to connect to the database.")
         return None
+    
     try:
-         # Retrieve the current user's employee_id
         with conn.cursor() as cursor:
-            # Insert the psychological assessment into the psychological_assessments table
+            user_id = assessment_data.get('userId', 'ganderson')
+            
+            cursor.execute("SELECT employee_id FROM employee WHERE employee_id = %s", (user_id,))
+            employee = cursor.fetchone()
+            
+            if not employee:
+                logging.error(f"Employee with ID {user_id} not found.")
+                return {
+                    "success": False,
+                    "message": f"Employee with ID {user_id} does not exist."
+                }
+
             query = """
             INSERT INTO psychological_assessments (assessment, timestamp, employee_id)
             VALUES (%s, %s, %s)
             RETURNING psy_id
             """
-            cursor.execute(query, (assessment_data['assessment'].lower(), assessment_data['timestamp'], assessment_data['userId']))
+            cursor.execute(query, (assessment_data['assessment'].lower(), 
+                                   assessment_data['timestamp'], 
+                                   user_id))  
             assessment_id = cursor.fetchone()[0]
+            logging.info("Committing transaction to insert psychological assessment")
             conn.commit()
+            
             response = {
                 "success": True,
                 "message": "Assessment submitted successfully",
                 "assessmentId": assessment_id
             }
             return response
+
     except psycopg2.Error as e:
-        logging.error(f"Error submitting psychological assessment: {e}")
-        response = {
+        logging.error(f"Error submitting psychological assessment: {e.pgcode} - {e.pgerror}")
+        return {
             "success": False,
-            "message": "Failed to submit assessment",
+            "message": "Failed to submit assessment due to database error.",
             "assessmentId": None
         }
-        return response
     finally:
         conn.close()
 
@@ -759,18 +774,42 @@ def submit_feedback(feedback_data):
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {
+            "success": False,
+            "message": "Database connection failed",
+            "feedbackId": None
+        }
+
     try:
         with conn.cursor() as cursor:
-            # Insert the feedback into the feedback table
+            user_id = feedback_data.get('userId', 'ganderson')
+            timestamp = feedback_data.get('timestamp', datetime.utcnow().isoformat())
+
+            logging.info(f"Checking if userId {user_id} exists...")
+            cursor.execute("SELECT employee_id FROM employee WHERE employee_id = %s", (user_id,))
+            employee = cursor.fetchone()
+            if not employee:
+                logging.error(f"Employee with ID {user_id} not found.")
+                return {
+                    "success": False,
+                    "message": f"Employee with ID {user_id} does not exist.",
+                    "feedbackId": None
+                }
+
             query = """
             INSERT INTO feedback (feedback_content, timestamp, employee_id)
             VALUES (%s, %s, %s)
             RETURNING feedback_id
             """
-            cursor.execute(query, (feedback_data['content'].lower(), feedback_data['timestamp'], feedback_data['userId']))
+            logging.info(f"Inserting feedback into the database for user {user_id}...")
+            cursor.execute(query, (feedback_data['content'].lower(), timestamp, user_id))
+
             feedback_id = cursor.fetchone()[0]
+            logging.info(f"Feedback inserted with ID {feedback_id}")
+
             conn.commit()
+            logging.info("Transaction committed successfully")
+
             response = {
                 "success": True,
                 "message": "Feedback submitted successfully",
@@ -778,15 +817,16 @@ def submit_feedback(feedback_data):
             }
             return response
     except psycopg2.Error as e:
-        logging.error(f"Error submitting feedback: {e}")
+        logging.error(f"Error submitting feedback: {e.pgcode} - {e.pgerror}")
         response = {
             "success": False,
-            "message": "Failed to submit feedback",
+            "message": "Failed to submit feedback due to a database error",
             "feedbackId": None
         }
         return response
     finally:
         conn.close()
+        logging.info("Database connection closed")
 
 # assign user_id by concatenating first letter of first name with last name
 # initialize password as 'password' for all new employees
