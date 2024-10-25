@@ -51,10 +51,18 @@ def get_team_details_route(team_id):
 
 @app.route('/api/financial-records', methods=['GET'])
 def get_financial_records_route():
-    records = get_financial_records()
-    if records is None:
-        return jsonify({"success": False, "message": "Failed to retrieve financial records"}), 500
-    return jsonify({"success": True, "records": records}), 200
+    try:
+        records_data = get_financial_records()
+        if not records_data or 'records' not in records_data:
+            return jsonify({"success": False, "message": "Failed to retrieve financial records"}), 500
+
+        return jsonify({"success": True, "records": records_data['records']}), 200
+
+    except Exception as e:
+        logging.error(f"Error occurred in get_financial_records_route: {e}")
+        logging.error(traceback.format_exc())  
+        return jsonify({"success": False, "message": "Internal server error"}), 500
+
 
 @app.route('/api/psychological-assessments', methods=['GET'])
 def get_psychological_assessments_route():

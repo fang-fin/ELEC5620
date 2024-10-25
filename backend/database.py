@@ -202,47 +202,54 @@ def get_team_details(team_id):
     finally:
         conn.close()
 
+import traceback
 def get_financial_records():
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {'error': 'Database connection failed'}, 500
 
     try:
         with conn.cursor() as cursor:
             # Query to get financial records along with project name and employee details
             query = """
-            SELECT fr.item_id, p.project_name, 
-                   SUM(CASE WHEN fr.category = 'income' THEN fr.amount ELSE 0 END) AS earning,
-                   SUM(CASE WHEN fr.category = 'expense' THEN fr.amount ELSE 0 END) AS cost,
-                   e.firstname || ' ' || e.lastname AS employee_name,
-                   fr."timestamp"
+            SELECT fr.item_id, p.project_name,
+                SUM(CASE WHEN fr.category = 'Income' THEN fr.amount ELSE 0 END) AS earning,
+                SUM(CASE WHEN fr.category = 'Expense' THEN fr.amount ELSE 0 END) AS cost,
+                u.firstname || ' ' || u.lastname AS employee_name,
+                fr.time
             FROM financial_records fr
             LEFT JOIN projects p ON fr.project_id = p.project_id
             LEFT JOIN employee e ON fr.employee_id = e.employee_id
-            GROUP BY fr.item_id, p.project_name, e.firstname, e.lastname, fr."timestamp"
+            LEFT JOIN users u ON e.employee_id = u.user_id  
+            GROUP BY fr.item_id, p.project_name, u.firstname, u.lastname, fr.time;
             """
+            logging.debug("Attempting to execute financial records query.")
             cursor.execute(query)
+            logging.debug("Query executed successfully, fetching records.")
             records = cursor.fetchall()
 
             # Format the response as a list of dictionaries
             records_list = []
             for record in records:
-                records_list.append({
-                    'id': str(record[0]),  # item_id as string
-                    'projectName': record[1],  # project_name
-                    'earning': float(record[2]),  # earning (income)
-                    'cost': float(record[3]),  # cost (expense)
-                    'employeeName': record[4],  # employee name (firstname + lastname)
-                    'timestamp': record[5].isoformat()  # ISO 8601 format
-                })
+                try:
+                    records_list.append({
+                        # 'id': str(record[0]),  # item_id as string
+                        'projectName': record[1],  # project_name
+                        'earning': float(record[2]),  # earning (income)
+                        'cost': float(record[3]),  # cost (expense)
+                        'employeeName': record[4],  # employee name (firstname + lastname)
+                        'timestamp': record[5] if record[5] else None
+                    })
+                except Exception as e:
+                    logging.error(f"Error processing record: {record} - {e}")
 
-            return {
-                'records': records_list
-            }
-    except psycopg2.Error as e:
+            return {'records':records_list}
+    except Exception as e:
         logging.error(f"Error fetching financial records: {e}")
+        logging.error(traceback.format_exc())  
         return None
+
     finally:
         conn.close()
 
@@ -794,7 +801,7 @@ def add_employee(employee_data):
             first_name = ' '.join(name_parts[:-1])
             last_name = name_parts[-1] if len(name_parts) > 1 else ''
             user_id = first_name[0].lower() + last_name.lower() if last_name else first_name.lower()
-            
+
             logging.info(f"Executing query: {insert_employee_query} with values: ({user_id}, 0, 0)")
 
             insert_user_query = """
