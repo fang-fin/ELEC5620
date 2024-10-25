@@ -639,6 +639,7 @@ def update_team(team_id, team_data):
     finally:
         conn.close()
 
+
 def add_financial_record(record_data):
     conn = openConnection()
     if not conn:
@@ -646,15 +647,11 @@ def add_financial_record(record_data):
         return None
 
     try:
-        # Create a cursor to execute SQL queries
         with conn.cursor() as cur:
-            # Get the project ID from the project name
-            get_project_id_query = """
-            SELECT project_id FROM projects WHERE project_name = %s
-            """
-            cur.execute(get_project_id_query, (record_data['projectName'].lower(),))
+            get_project_id_query = "SELECT project_id FROM projects WHERE project_name = %s"
+            cur.execute(get_project_id_query, (record_data['projectName'],))
             project_id = cur.fetchone()
-            
+
             if project_id is None:
                 return {
                     "success": False,
@@ -662,53 +659,65 @@ def add_financial_record(record_data):
                     "recordId": None
                 }
             project_id = project_id[0]
-            # Initialize a list to store newly added record IDs
-            added_record_ids = [] 
-            # Check if earning is present and non-zero
+            logging.info(f"Fetched project_id: {project_id}")
+
+            get_employee_id_query = "SELECT employee_id FROM employee WHERE employee_id = 'ganderson'"
+            cur.execute(get_employee_id_query)
+            employee_id = cur.fetchone()
+
+            if employee_id is None:
+                return {
+                    "success": False,
+                    "message": "Default employee 'ganderson' not found.",
+                    "recordId": None
+                }
+            employee_id = employee_id[0] 
+            logging.info(f"Fetched employee_id for ganderson: {employee_id}")
+
+            added_record_ids = []
+            current_time = datetime.now()  
+
             if 'earning' in record_data and record_data['earning'] > 0:
-                # Insert the financial record into the financial_records table
                 cur.execute("""
-                INSERT INTO financial_records (project_id, amount, category, timestamp)
-                VALUES (%s, %s, %s, %s)
-                RETURNING item_id
-                """, (project_id, record_data['earning'], 'Income', record_data['timestamp']))
+                    INSERT INTO financial_records (project_id, amount, category, time, employee_id)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING item_id
+                """, (project_id, record_data['earning'], 'Income', current_time, employee_id))
                 record_id = cur.fetchone()[0]
                 added_record_ids.append(record_id)
-            #check if cost is present and non-zero
+                logging.info(f"Earning record added with item_id: {record_id}")
+
             if 'cost' in record_data and record_data['cost'] > 0:
-                # Insert the financial record into the financial_records table
                 cur.execute("""
-                INSERT INTO financial_records (project_id, amount, category, timestamp)
-                VALUES (%s, %s, %s, %s)
-                RETURNING item_id
-                """, (project_id, record_data['cost'], 'Expense', record_data['timestamp']))
+                    INSERT INTO financial_records (project_id, amount, category, time, employee_id)
+                    VALUES (%s, %s, %s, %s, %s)
+                    RETURNING item_id
+                """, (project_id, record_data['cost'], 'Expense', current_time, employee_id))
                 record_id = cur.fetchone()[0]
                 added_record_ids.append(record_id)
-            # Commit the transaction
+                logging.info(f"Expense record added with item_id: {record_id}")
+
             conn.commit()
+            logging.info("Transaction committed successfully.")
+
             if added_record_ids:
-                # Prepare success response if records were added
                 response = {
                     "success": True,
                     "message": "Financial record(s) added successfully",
-                    "recordId": ', '.join(map(str, added_record_ids))  # List of added record IDs
+                    "recordId": ', '.join(map(str, added_record_ids))
                 }
             else:
-                # No records were added
                 response = {
                     "success": False,
                     "message": "No financial records were added (earning or cost is 0).",
                     "recordId": None
                 }
-            
             return response
+
     except psycopg2.Error as e:
         logging.error(f"Error adding financial record: {e}")
-        return {
-            "success": False,
-            "message": "Failed to add financial record",
-            "recordId": None
-        }
+        conn.rollback()
+        return {"success": False, "message": "Failed to add financial record", "recordId": None}
     finally:
         conn.close()
 
