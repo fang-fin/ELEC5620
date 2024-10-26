@@ -115,15 +115,13 @@ function FeedbackMechanism() {
     fetchFeedbackHistory();
   }, []);
 
-  // 获取反馈历史记录
   const fetchFeedbackHistory = async () => {
     try {
-      const response = await fetch('/api/feedback'); // 使用正确的路径
+      const response = await fetch('/api/feedback'); 
       const data = await response.json();
   
-      // 提取反馈历史记录
-      if (data.feedback && Array.isArray(data.feedback.employees)) {  // 确保与后端返回的数据字段匹配
-        setFeedbackHistory(data.feedback.employees); // 设置反馈历史记录
+      if (data.feedback && Array.isArray(data.feedback.employees)) {  
+        setFeedbackHistory(data.feedback.employees); 
       } else {
         console.error('Employees is not an array', data);
         setFeedbackHistory([]);  
@@ -135,33 +133,32 @@ function FeedbackMechanism() {
   };
   
 
-  // 提交反馈
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem('userId'); // 从本地存储中获取用户ID
+    const userId = localStorage.getItem('userId'); 
     try {
-      const response = await fetch('/api/feedback', { // 使用正确的路径
-        method: 'POST',
+      const response = await fetch('/api/feedback', { 
+        method: 'POST', // 添加POST方法
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           content: feedback,
           timestamp: new Date().toISOString(),
-          userId: userId  // 传递用户ID
+          userId: userId  
         }),
       });
       if (response.ok) {
         alert('Feedback submitted successfully');
-        setFeedback(''); // 清空反馈输入框
-        fetchFeedbackHistory(); // 重新获取反馈历史记录
+        setFeedback(''); 
+        fetchFeedbackHistory(); 
       } else {
         alert('Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
-  };
+};
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">

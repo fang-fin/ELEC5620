@@ -253,8 +253,12 @@ def get_financial_records():
     finally:
         conn.close()
 
-
+from flask import jsonify, request
 def get_psychological_assessments():
+    employee_id = request.args.get('employee_id')
+    if not employee_id:
+        logging.error("Employee ID is missing in the request.")
+        return jsonify({'error': 'Employee ID is required'}), 400
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
@@ -266,8 +270,9 @@ def get_psychological_assessments():
             query = """
             SELECT psy_id, assessment, "timestamp"
             FROM psychological_assessments
+            WHERE employee_id = %s
             """
-            cursor.execute(query)
+            cursor.execute(query, (employee_id,))
             assessments = cursor.fetchall()
 
             # Format the response as a list of dictionaries
@@ -727,6 +732,11 @@ def add_financial_record(record_data):
         conn.close()
 
 def submit_psychological_assessment(assessment_data):
+    assessment_data = request.json
+    employee_id = assessment_data.get('employee_id') 
+    if not employee_id:
+        logging.error("Employee ID is missing in the request.")
+        return jsonify({'error': 'Employee ID is required'}), 400
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
@@ -734,16 +744,14 @@ def submit_psychological_assessment(assessment_data):
     
     try:
         with conn.cursor() as cursor:
-            user_id = assessment_data.get('userId', 'ganderson')
-            
-            cursor.execute("SELECT employee_id FROM employee WHERE employee_id = %s", (user_id,))
+            cursor.execute("SELECT employee_id FROM employee WHERE employee_id = %s", (employee_id,))
             employee = cursor.fetchone()
             
             if not employee:
-                logging.error(f"Employee with ID {user_id} not found.")
+                logging.error(f"Employee with ID {employee_id} not found.")
                 return {
                     "success": False,
-                    "message": f"Employee with ID {user_id} does not exist."
+                    "message": f"Employee with ID {employee_id} does not exist."
                 }
 
             query = """
@@ -753,7 +761,7 @@ def submit_psychological_assessment(assessment_data):
             """
             cursor.execute(query, (assessment_data['assessment'].lower(), 
                                    assessment_data['timestamp'], 
-                                   user_id))  
+                                   employee_id))  
             assessment_id = cursor.fetchone()[0]
             logging.info("Committing transaction to insert psychological assessment")
             conn.commit()
@@ -776,6 +784,11 @@ def submit_psychological_assessment(assessment_data):
         conn.close()
 
 def submit_feedback(feedback_data):
+    feedback_data = request.json
+    employee_id = feedback_data.get('userId') 
+    if not employee_id:
+        logging.error("Employee ID is missing in the request.")
+        return jsonify({'error': 'Employee ID is required'}), 400
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
@@ -787,17 +800,16 @@ def submit_feedback(feedback_data):
 
     try:
         with conn.cursor() as cursor:
-            user_id = feedback_data.get('userId', 'ganderson')
             timestamp = feedback_data.get('timestamp', datetime.utcnow().isoformat())
 
-            logging.info(f"Checking if userId {user_id} exists...")
-            cursor.execute("SELECT employee_id FROM employee WHERE employee_id = %s", (user_id,))
+            logging.info(f"Checking if userId {employee_id} exists...")
+            cursor.execute("SELECT employee_id FROM employee WHERE employee_id = %s", (employee_id,))
             employee = cursor.fetchone()
             if not employee:
-                logging.error(f"Employee with ID {user_id} not found.")
+                logging.error(f"Employee with ID {employee_id} not found.")
                 return {
                     "success": False,
-                    "message": f"Employee with ID {user_id} does not exist.",
+                    "message": f"Employee with ID {employee_id} does not exist.",
                     "feedbackId": None
                 }
 
@@ -806,8 +818,8 @@ def submit_feedback(feedback_data):
             VALUES (%s, %s, %s)
             RETURNING feedback_id
             """
-            logging.info(f"Inserting feedback into the database for user {user_id}...")
-            cursor.execute(query, (feedback_data['content'].lower(), timestamp, user_id))
+            logging.info(f"Inserting feedback into the database for user {employee_id}...")
+            cursor.execute(query, (feedback_data['content'].lower(), timestamp, employee_id))
 
             feedback_id = cursor.fetchone()[0]
             logging.info(f"Feedback inserted with ID {feedback_id}")
@@ -964,24 +976,53 @@ def add_employee(employee_data):
 
 
 def submit_clock_in(clock_in_data):
-    # TODO: Implement logic to submit a clock-in record
-    # 1. Connect to the database
-    # 2. Insert clock_in_data into the clock-in records table
-    # 3. Return the ID of the newly created clock-in record
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {"success": False, "message": "Database connection failed", "recordId": None}
+    
     try:
         with conn.cursor() as cursor:
-            query = """
-            INSERT INTO clock_in_records (project_id, start_time, end_time, employee_id)
-            VALUES (%s, %s, %s, %s)
+            # Step 1: Retrieve the project_id using the project_name
+            project_name = clock_in_data.get('projectName')
+            project_query = "SELECT project_id FROM projects WHERE project_name = %s"
+            cursor.execute(project_query, (project_name,))
+            project_result = cursor.fetchone()
+            
+            if not project_result:
+                logging.error("Project name not found in the database.")
+                return {"success": False, "message": "Project name not found", "recordId": None}
+            
+            project_id = project_result[0]
+            logging.info(f"Retrieved project_id: {project_id}")
+
+            # Parse ISO 8601 format times from the frontend
+            start_time_str = clock_in_data.get('startTime')  # e.g., "2024-10-21T21:44:00.000Z"
+            end_time_str = clock_in_data.get('endTime')      # e.g., "2024-10-21T21:44:00.000Z"
+
+            # Convert start and end times to datetime objects
+            start_time = datetime.fromisoformat(start_time_str.replace("Z", "+00:00"))
+            end_time = datetime.fromisoformat(end_time_str.replace("Z", "+00:00"))
+            duration = (end_time - start_time).total_seconds() / 3600
+            logging.info(f"Converted start_time: {start_time} and end_time: {end_time} to 24-hour format")
+
+            # Step 2: Insert the clock-in data using the retrieved project_id
+            clock_in_query = """
+            INSERT INTO clock_in_records (project_id, start_time, end_time, employee_id, duration)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING clock_in_id
             """
-            cursor.execute(query, (clock_in_data['projectId'], clock_in_data['startTime'], clock_in_data['endTime'], clock_in_data['userId']))
+            cursor.execute(clock_in_query, (
+                project_id,
+                start_time,
+                end_time,
+                clock_in_data['userId'],
+                duration
+            ))
             record_id = cursor.fetchone()[0]
-            conn.commit()
+            conn.commit()  # Ensure transaction is committed
+            logging.info("Transaction committed successfully with record_id: " + str(record_id))
+
             response = {
                 "success": True,
                 "message": "Clock-in record submitted successfully",
@@ -996,3 +1037,5 @@ def submit_clock_in(clock_in_data):
             "recordId": None
         }
         return response
+    finally:
+        conn.close()

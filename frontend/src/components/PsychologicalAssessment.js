@@ -11,14 +11,15 @@ function PsychologicalAssessment() {
   }, []);
 
   const fetchAssessments = async () => {
+    const userId = localStorage.getItem('userId');  
     try {
-      const response = await fetch('/api/psychological-assessments');
+      const response = await fetch(`/api/psychological-assessments?employee_id=${userId}`);
       const data = await response.json();
   
       if (data.assessments && Array.isArray(data.assessments)) {
         setAssessments(data.assessments);
       } else if (data.assessments && Array.isArray(data.assessments.assessments)) {
-        setAssessments(data.assessments.assessments); // 处理多层嵌套
+        setAssessments(data.assessments.assessments); 
       } else {
         setAssessments([]);
         console.error('Assessments is not an array or in unexpected format', data);
@@ -43,7 +44,7 @@ function PsychologicalAssessment() {
         body: JSON.stringify({
           assessment: combinedText,
           timestamp: new Date().toISOString(),
-          userId: userId 
+          employee_id: userId 
         }),
       });
       if (response.ok) {
