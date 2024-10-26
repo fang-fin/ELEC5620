@@ -20,7 +20,7 @@ function FeedbackMechanism() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem('userId'); // get user id from local storage
+    const userId = localStorage.getItem('userId');
     
     // add debug information before request
     console.log('Submitting feedback:', {

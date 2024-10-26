@@ -23,7 +23,7 @@ function PsychologicalAssessment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const combinedText = `Q1: ${question1}\nQ2: ${question2}\nQ3: ${question3}`;
-    const userId = localStorage.getItem('userId'); // 获取用户ID
+    const userId = localStorage.getItem('userId');
     
     // add debug information before request
     console.log('Submitting psychological assessment:', {
