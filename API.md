@@ -441,6 +441,31 @@ json
 ]
 }
 
+
+#### 9.2 Submit Clock-In Record
+
+**Endpoint:** `/api/clock-in`
+
+**Method:** POST
+
+**Description:** Submits a new clock-in record.
+
+**Request Body:**
+json
+{
+"projectName": string,
+"duration": number,
+"startTime": string (ISO 8601 date-time format),
+"endTime": string (ISO 8601 date-time format)
+}
+**Response Body:**
+json
+{
+"success": boolean,
+"message": string,
+"recordId": string
+}
+
 ### 10. Employee Management
 
 #### 10.1 Get All Employees

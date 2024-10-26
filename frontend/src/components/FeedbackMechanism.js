@@ -20,7 +20,15 @@ function FeedbackMechanism() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem('userId'); // 获取用户ID
+    const userId = localStorage.getItem('userId'); // get user id from local storage
+    
+    // add debug information before request
+    console.log('Submitting feedback:', {
+      content: feedback,
+      userId: userId,
+      timestamp: new Date().toISOString()
+    });
+
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
@@ -33,6 +41,13 @@ function FeedbackMechanism() {
           userId: userId 
         }),
       });
+      
+      // add debug information after response
+      console.log('Feedback submission response:', {
+        status: response.status,
+        ok: response.ok
+      });
+
       if (response.ok) {
         alert('Feedback submitted successfully');
         setFeedback('');
