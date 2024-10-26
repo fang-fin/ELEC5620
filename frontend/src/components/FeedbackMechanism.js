@@ -115,13 +115,15 @@ function FeedbackMechanism() {
     fetchFeedbackHistory();
   }, []);
 
+  // 获取反馈历史记录
   const fetchFeedbackHistory = async () => {
     try {
-      const response = await fetch('/api/feedback'); 
+      const response = await fetch('/api/feedback'); // 使用正确的路径
       const data = await response.json();
   
-      if (data.feedback && Array.isArray(data.feedback.employees)) {  
-        setFeedbackHistory(data.feedback.employees); 
+      // 提取反馈历史记录
+      if (data.feedback && Array.isArray(data.feedback.employees)) {  // 确保与后端返回的数据字段匹配
+        setFeedbackHistory(data.feedback.employees); // 设置反馈历史记录
       } else {
         console.error('Employees is not an array', data);
         setFeedbackHistory([]);  
@@ -133,32 +135,50 @@ function FeedbackMechanism() {
   };
   
 
+  // 提交反馈
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem('userId'); 
+
+    const userId = localStorage.getItem('userId');
+    
+    // add debug information before request
+    console.log('Submitting feedback:', {
+      content: feedback,
+      userId: userId,
+      timestamp: new Date().toISOString()
+    });
+
+
     try {
-      const response = await fetch('/api/feedback', { 
-        method: 'POST', // 添加POST方法
+      const response = await fetch('/api/feedback', { // 使用正确的路径
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           content: feedback,
           timestamp: new Date().toISOString(),
-          userId: userId  
+          userId: userId  // 传递用户ID
         }),
       });
+      
+      // add debug information after response
+      console.log('Feedback submission response:', {
+        status: response.status,
+        ok: response.ok
+      });
+
       if (response.ok) {
         alert('Feedback submitted successfully');
-        setFeedback(''); 
-        fetchFeedbackHistory(); 
+        setFeedback(''); // 清空反馈输入框
+        fetchFeedbackHistory(); // 重新获取反馈历史记录
       } else {
         alert('Failed to submit feedback');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
-};
+  };
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
