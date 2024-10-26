@@ -9,13 +9,22 @@ function TimeAnalysis() {
 
   const fetchEmployeeTimeData = async () => {
     try {
-      const response = await fetch('/api/employee-time-analysis');
-      const data = await response.json();
-      setEmployeeData(data.employees);
+        const response = await fetch('/api/employee-time-analysis');
+        const data = await response.json();
+        
+        console.log('Fetched data:', data); 
+
+        if (data.success && data.timeAnalysis && Array.isArray(data.timeAnalysis.employees)) {
+            setEmployeeData(data.timeAnalysis.employees);
+        } else {
+            console.warn('Unexpected data structure:', data); 
+            setEmployeeData([]); 
+        }
     } catch (error) {
-      console.error('Error fetching employee time data:', error);
+        console.error('Error fetching employee time data:', error);
     }
-  };
+};
+
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">

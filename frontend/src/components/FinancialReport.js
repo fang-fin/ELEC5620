@@ -10,16 +10,32 @@ function FinancialReport() {
     fetchFinancialRecords();
   }, []);
 
+  // const fetchFinancialRecords = async () => {
+  //   try {
+  //     const response = await fetch('/api/financial-records');
+  //     const data = await response.json();
+  //     setFinancialRecords(data.records);
+  //   } catch (error) {
+  //     console.error('Error fetching financial records:', error);
+  //   }
+  // };
   const fetchFinancialRecords = async () => {
     try {
       const response = await fetch('/api/financial-records');
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
       const data = await response.json();
-      setFinancialRecords(data.records);
+      if (data.records) {
+        setFinancialRecords(data.records);
+      } else {
+        console.error('No records found in the response');
+      }
     } catch (error) {
       console.error('Error fetching financial records:', error);
     }
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

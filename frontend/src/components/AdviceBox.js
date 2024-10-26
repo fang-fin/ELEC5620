@@ -11,11 +11,17 @@ function AdviceBox() {
     try {
       const response = await fetch('/api/feedback');
       const data = await response.json();
-      setFeedbackList(data.feedbackHistory);
+      if (data.error) {
+        console.error(data.error);
+        alert('Error fetching feedback: ' + data.error);
+      } else {
+        setFeedbackList(data.feedbackHistory || []);
+      }
     } catch (error) {
       console.error('Error fetching feedback:', error);
     }
   };
+  
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
