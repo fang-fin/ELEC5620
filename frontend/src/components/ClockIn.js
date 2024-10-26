@@ -131,7 +131,7 @@ function ClockIn() {
               <th className="border p-2">Project Name</th>
               <th className="border p-2">Start Time</th>
               <th className="border p-2">End Time</th>
-              <th className="border p-2">Duration (minutes)</th>
+              <th className="border p-2">Duration (hours)</th>
             </tr>
           </thead>
           <tbody>
