@@ -138,7 +138,17 @@ function FeedbackMechanism() {
   // 提交反馈
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const userId = localStorage.getItem('userId'); // 从本地存储中获取用户ID
+
+    const userId = localStorage.getItem('userId');
+    
+    // add debug information before request
+    console.log('Submitting feedback:', {
+      content: feedback,
+      userId: userId,
+      timestamp: new Date().toISOString()
+    });
+
+
     try {
       const response = await fetch('/api/feedback', { // 使用正确的路径
         method: 'POST',
@@ -151,6 +161,13 @@ function FeedbackMechanism() {
           userId: userId  // 传递用户ID
         }),
       });
+      
+      // add debug information after response
+      console.log('Feedback submission response:', {
+        status: response.status,
+        ok: response.ok
+      });
+
       if (response.ok) {
         alert('Feedback submitted successfully');
         setFeedback(''); // 清空反馈输入框
