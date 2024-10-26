@@ -13,13 +13,21 @@ function EmployeeManagement() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees');
-      const data = await response.json();
-      setEmployees(data.employees);
+        const response = await fetch('/api/employees');
+        const data = await response.json();
+        console.log('Fetched data:', data); 
+
+        if (data.success && data.employees && Array.isArray(data.employees.employees)) {
+            setEmployees(data.employees.employees);
+        } else {
+            console.warn('Unexpected data structure:', data); 
+            setEmployees([]); 
+        }
     } catch (error) {
-      console.error('Error fetching employees:', error);
+        console.error('Error fetching employees:', error); 
     }
-  };
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +52,8 @@ function EmployeeManagement() {
         setEmployeeRole('');
         fetchEmployees();
       } else {
+        const errorData = await response.json();
+        console.error('Error response data:', errorData);
         alert('Failed to add employee');
       }
     } catch (error) {

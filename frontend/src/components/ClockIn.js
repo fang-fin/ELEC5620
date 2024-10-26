@@ -10,16 +10,37 @@ function ClockIn() {
     fetchClockInRecords();
   }, []);
 
+  // const fetchClockInRecords = async () => {
+  //   try {
+  //     const response = await fetch('/api/clock-in-records');
+  //     const data = await response.json();
+  //     setClockInRecords(data.records);
+  //   } catch (error) {
+  //     console.error('Error fetching clock-in records:', error);
+  //   }
+  // };
   const fetchClockInRecords = async () => {
     try {
       const response = await fetch('/api/clock-in-records');
       const data = await response.json();
-      setClockInRecords(data.records);
+  
+      console.log('Fetched data:', data);
+      console.log('data.records:', data.records);
+  
+      if (data.success && data.records && Array.isArray(data.records.records)) {
+        setClockInRecords(data.records.records);  
+        console.log('clockInRecords successfully set:', data.records.records);
+      } else {
+        console.error('clockInRecords is not an array or request failed', data);
+        setClockInRecords([]);  
+      }
     } catch (error) {
       console.error('Error fetching clock-in records:', error);
+      setClockInRecords([]);  
     }
   };
-
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const start = new Date(startTime);
