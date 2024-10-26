@@ -346,19 +346,24 @@ def get_clock_in_records():
             records_list = []
             for record in records:
                 records_list.append({
-                    'id': str(record[0]), 
+                    # 'id': str(record[0]), 
                     'projectName': record[1],  
-                    'startTime': record[2].isoformat(),  
-                    'endTime': record[3].isoformat(), 
-                    'duration': float(record[4]) 
+                    'startTime': record[2].isoformat() if record[2] else None,  
+                    'endTime': record[3].isoformat() if record[3] else None, 
+                    'duration': float(record[4]) if record[4] is not None else 0.0
                 })
 
             return {
-                'records': records_list
+                'records': records_list, 
+                'success': True
             }
     except psycopg2.Error as e:
         logging.error(f"Error fetching clock-in records: {e}")
-        return None
+        return {
+            "records": [],
+            "success": False,
+            "message": "Error fetching clock-in records"
+        }
     finally:
         conn.close()
 

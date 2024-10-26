@@ -24,10 +24,14 @@ function ClockIn() {
       const response = await fetch('/api/clock-in-records');
       const data = await response.json();
   
-      if (Array.isArray(data.clockInRecords)) {
-        setClockInRecords(data.clockInRecords);
+      console.log('Fetched data:', data);
+      console.log('data.records:', data.records);
+  
+      if (data.success && data.records && Array.isArray(data.records.records)) {
+        setClockInRecords(data.records.records);  
+        console.log('clockInRecords successfully set:', data.records.records);
       } else {
-        console.error('clockInRecords is not an array', data);
+        console.error('clockInRecords is not an array or request failed', data);
         setClockInRecords([]);  
       }
     } catch (error) {
@@ -35,6 +39,7 @@ function ClockIn() {
       setClockInRecords([]);  
     }
   };
+  
   
   const handleSubmit = async (e) => {
     e.preventDefault();
