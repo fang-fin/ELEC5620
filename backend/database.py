@@ -132,37 +132,32 @@ def get_teams():
     conn = openConnection()  
     if not conn:
         logging.error("Failed to connect to the database.")
-        return None
+        return {"success": False, "message": "Database connection failed"}, 500
 
     try:
         with conn.cursor() as cursor:
-            #Query the team table to get all team information
             query = """
-            SELECT team_id, name
+            SELECT id, name
             FROM teams
             """
             cursor.execute(query)
             teams = cursor.fetchall()
 
-            #Return the list of teams
-            if teams:
-                team_list = []
-                for team in teams:
-                    team_list.append({
-                        'id': str(team[0]),  # convert to string
-                        'name': team[1]
-                    })
-                
-                return {
-                    "teams": team_list
-                }
-            else:
-                return {
-                    "teams": []
-                }
+            # 返回团队列表，直接返回 `teams` 数组
+            team_list = [
+                {"id": str(team[0]), "name": team[1]}
+                for team in teams
+            ]
+            return {
+                "success": True,
+                "teams": team_list  # 直接返回数组而不是嵌套
+            }
     except psycopg2.Error as e:
         logging.error(f"Error fetching teams: {e}")
-        return None
+        return {
+            "success": False,
+            "message": "Failed to retrieve teams"
+        }, 500
     finally:
         conn.close()
 

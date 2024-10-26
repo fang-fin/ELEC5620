@@ -11,11 +11,18 @@ function TeamManagement() {
 
   const fetchTeams = async () => {
     try {
-      const response = await fetch('/api/teams');
+      const response = await fetch('/api/teams'); 
       const data = await response.json();
-      setTeams(data.teams);
+      
+      if (data.success && data.teams && Array.isArray(data.teams.teams)) {
+        setTeams(data.teams.teams);  
+      } else {
+        console.error('Teams data is not an array or request failed', data);
+        setTeams([]);  
+      }
     } catch (error) {
       console.error('Error fetching teams:', error);
+      setTeams([]);  
     }
   };
 

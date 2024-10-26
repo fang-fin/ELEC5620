@@ -13,6 +13,7 @@ function ProjectManagement() {
     try {
       const response = await fetch('/api/projects');
       const data = await response.json();
+      console.log("Fetched projects:", data.projects.map(project => project.id));
       setProjects(data.projects);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -63,9 +64,9 @@ function ProjectManagement() {
       
       {/* Project List */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {projects.map((project) => (
+        {projects.map((project, index) => (
           <button
-            key={project.id}
+            key={`project-${project.id}-${index}`}
             onClick={() => handleProjectSelect(project.id)}
             className={`px-4 py-2 rounded ${
               selectedProject === project.id ? 'bg-blue-500 text-white' : 'bg-gray-200'
