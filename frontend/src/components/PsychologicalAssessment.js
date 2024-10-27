@@ -34,7 +34,17 @@ function PsychologicalAssessment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const combinedText = `Q1: ${question1}\nQ2: ${question2}\nQ3: ${question3}`;
-    const userId = localStorage.getItem('userId'); 
+
+    const userId = localStorage.getItem('userId');
+    
+    // add debug information before request
+    console.log('Submitting psychological assessment:', {
+      assessment: combinedText,
+      userId: userId,
+      timestamp: new Date().toISOString()
+    });
+
+
     try {
       const response = await fetch('/api/psychological-assessments', {
         method: 'POST',
@@ -47,6 +57,13 @@ function PsychologicalAssessment() {
           employee_id: userId 
         }),
       });
+      
+      // add debug information after response
+      console.log('Psychological assessment response:', {
+        status: response.status,
+        ok: response.ok
+      });
+      
       if (response.ok) {
         alert('Assessment submitted successfully');
         setQuestion1('');

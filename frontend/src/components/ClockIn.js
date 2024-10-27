@@ -30,10 +30,24 @@ function ClockIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    const formattedStartTime = `${date} ${startTime}`;
-    const formattedEndTime = `${date} ${endTime}`;
-  
+
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const duration = (end - start) / 1000 / 60; // Duration in minutes
+
+    if (duration < 0) {
+      alert('End time must be after start time');
+      return;
+    }
+
+    // add debug information before request
+    console.log('Submitting clock-in record:', {
+      projectName,
+      duration,
+      startTime: start.toISOString(),
+      endTime: end.toISOString()
+    });
+
     try {
       const response = await fetch('/api/clock-in', {
         method: 'POST',
@@ -47,6 +61,13 @@ function ClockIn() {
           userId,
         }),
       });
+      
+      // add debug information after response
+      console.log('Clock-in submission response:', {
+        status: response.status,
+        ok: response.ok
+      });
+
       if (response.ok) {
         alert('Clock-in record submitted successfully');
         setProjectName('');
