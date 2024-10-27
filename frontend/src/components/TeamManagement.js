@@ -6,7 +6,7 @@ function TeamManagement() {
   const [teamDetails, setTeamDetails] = useState({
     name: '',
     description: '',
-    employees: '',  // Changed to string for comma-separated input
+    employees: '',  
     totalEarning: 0,
     totalDuration: 0,
     teamEfficiency: 0
