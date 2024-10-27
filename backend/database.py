@@ -170,24 +170,33 @@ def get_team_details(team_id):
 
     try:
         with conn.cursor() as cursor:
-            # Query to get the details of the team by team_id
-            query = """
+            team_query = """
             SELECT id, name, description, total_earning, total_duration, team_efficiency
             FROM teams
             WHERE id = %s
             """
-            cursor.execute(query, (team_id,))
+            cursor.execute(team_query, (team_id,))
             team = cursor.fetchone()
 
             if team:
-                # Format the response as a dictionary with team details
+                employee_query = """
+                SELECT employee_id
+                FROM employee_team
+                WHERE team_id = %s
+                """
+                cursor.execute(employee_query, (team_id,))
+                employees = cursor.fetchall()
+
+                employee_ids = [emp[0] for emp in employees] if employees else []
+
                 return {
-                    'id': str(team[0]),  # Ensuring 'id' is returned as a string
+                    'id': str(team[0]),  
                     'name': team[1],
                     'description': team[2],
                     'totalEarning': float(team[3]) if team[3] else 0.0,
                     'totalDuration': int(team[4]) if team[4] else 0,
-                    'teamEfficiency': int(team[5]) if team[5] else 0
+                    'teamEfficiency': int(team[5]) if team[5] else 0,
+                    'employees': employee_ids  
                 }
             else:
                 return None
@@ -196,6 +205,7 @@ def get_team_details(team_id):
         return None
     finally:
         conn.close()
+
 
 import traceback
 def get_financial_records():
