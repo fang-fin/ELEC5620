@@ -4,14 +4,14 @@ import logging
 
 def openConnection():
 
-    # database_name = "elec5620"
-    # userid = "postgres"
-    # passwd = "PASSword123."
-    # myHost = "elec5620.cdce2uw4szzi.ap-southeast-2.rds.amazonaws.com"  # RDS' Endpoint
-    database_name = "ELEC5620"          
-    userid = "postgres"                  
-    passwd = "feet"        
-    myHost = "localhost"  
+    database_name = "elec5620"
+    userid = "postgres"
+    passwd = "PASSword123."
+    myHost = "elec5620.cdce2uw4szzi.ap-southeast-2.rds.amazonaws.com"  # RDS' Endpoint
+    # database_name = "ELEC5620"          
+    # userid = "postgres"                  
+    # passwd = "feet"        
+    # myHost = "localhost"  
 
 
     conn = None
@@ -114,7 +114,7 @@ def get_project_details(project_id):
                 # Debug log
                 logging.info(f"Found project: {project}")
                 
-                # 获取项目相关的员工
+                
                 employee_query = """
                 SELECT e.employee_id 
                 FROM employee_project ep
@@ -496,50 +496,55 @@ def get_employee_time_analysis():
 
 
 def create_project(project_data):
+    logging.info(f"Creating project with data: {project_data}")
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
         return None
 
     try:
-        # Create a cursor to execute SQL queries
         with conn.cursor() as cursor:
-            # Insert project data into the projects table
+            # Log SQL query
             query = """
-            INSERT INTO projects (project_name, description, deadline)
-            VALUES (%s, %s, %s)
+            INSERT INTO projects (project_name, description, deadline, start_date)
+            VALUES (%s, %s, %s, CURRENT_DATE)
             RETURNING project_id
             """
-            cursor.execute(query, (project_data['name'].lower(), project_data['description'].lower(), project_data['deadline']))
+            logging.info(f"Executing query: {query}")
+            logging.info(f"Query parameters: {(project_data['name'], project_data['description'], project_data['deadline'])}")
+            
+            cursor.execute(query, (
+                project_data['name'].lower(),
+                project_data['description'].lower(),
+                project_data['deadline']
+            ))
             project_id = cursor.fetchone()[0]
+            logging.info(f"Created project with ID: {project_id}")
 
-            # Insert employee-project relationships into the employee_project table
-            for employee_id in project_data['employees'].split(','):
-                cursor.execute("INSERT INTO employee_project (employee_id, project_id) VALUES (%s, %s)", 
-                               (employee_id.strip().lower(), project_id))
+            # Process employees
+            if project_data.get('employees'):
+                for employee_id in project_data['employees'].split(','):
+                    emp_id = employee_id.strip().lower()
+                    if emp_id:
+                        logging.info(f"Adding employee {emp_id} to project {project_id}")
+                        cursor.execute("SELECT 1 FROM employee WHERE employee_id = %s", (emp_id,))
+                        if cursor.fetchone():
+                            cursor.execute("""
+                                INSERT INTO employee_project (employee_id, project_id) 
+                                VALUES (%s, %s)
+                            """, (emp_id, project_id))
+                            logging.info(f"Added employee {emp_id} to project {project_id}")
+                        else:
+                            logging.warning(f"Employee {emp_id} not found, skipping")
 
-            # Commit after all employee-project relations are inserted
             conn.commit()
-
-            # Success response
-            response = {
-                "success": True,
-                "message": "Project created successfully",
-                "projectId": project_id
-            }
-            print(response)
             return project_id
 
     except psycopg2.Error as e:
         logging.error(f"Error creating project: {e}")
-        response = {
-            "success": False,
-            "message": "Failed to create project",
-            "projectId": None
-        }
-        print(response)
+        if conn:
+            conn.rollback()
         return None
-
     finally:
         conn.close()
 
@@ -593,38 +598,51 @@ def create_team(team_data):
 
     try:
         with conn.cursor() as cursor:
-            # Insert team data into the teams table
+            # Debug log
+            logging.info(f"Creating team with data: {team_data}")
+            
+            # Insert team data with default values
             query = """
-            INSERT INTO teams (name, description)
-            VALUES (%s, %s)
+            INSERT INTO teams (name, description, total_earning, total_duration, team_efficiency)
+            VALUES (%s, %s, 0, 0, 0)
             RETURNING id
             """
-            cursor.execute(query, (team_data['name'].lower(), team_data['description'].lower()))
+            cursor.execute(query, (
+                team_data.get('name', '').lower(),
+                team_data.get('description', '').lower()
+            ))
             team_id = cursor.fetchone()[0]
-            for employee_id in team_data['employees'].split(','):
-                cursor.execute("INSERT INTO team_employee (employee_id, team_id) VALUES (%s, %s)", 
-                               (employee_id.strip().lower(), team_id))
+            
+            # Add employees if provided
+            if team_data.get('employees'):
+                for employee_id in team_data['employees'].split(','):
+                    emp_id = employee_id.strip().lower()
+                    if emp_id:
+                        # Verify employee exists
+                        cursor.execute("SELECT 1 FROM employee WHERE employee_id = %s", (emp_id,))
+                        if cursor.fetchone():
+                            cursor.execute("""
+                                INSERT INTO employee_team (employee_id, team_id) 
+                                VALUES (%s, %s)
+                            """, (emp_id, team_id))
+                        else:
+                            logging.warning(f"Employee {emp_id} not found, skipping")
+
             conn.commit()
-            response = {
-                "success": True,
-                "message": "Team created successfully",
-                "teamId": team_id
-            }
-            print(response)
+            logging.info(f"Team created successfully with ID: {team_id}")
             return team_id
+
     except psycopg2.Error as e:
         logging.error(f"Error creating team: {e}")
-        response = {
-            "success": False,
-            "message": "Failed to create team",
-            "teamId": None
-        }
-        print(response)
+        if conn:
+            conn.rollback()
         return None
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 def update_team(team_id, team_data):
+    logging.info(f"Updating team {team_id} with data: {team_data}")
     conn = openConnection()
     if not conn:
         logging.error("Failed to connect to the database.")
@@ -632,31 +650,42 @@ def update_team(team_id, team_data):
 
     try:
         with conn.cursor() as cursor:
-            # Update team details in the teams table
+            # Update team details
             query = """
             UPDATE teams
             SET name = %s, description = %s
             WHERE id = %s
             """
-            cursor.execute(query, (team_data['name'].lower(), team_data['description'].lower(), team_id))
-            cursor.execute("DELETE FROM team_employee WHERE team_id = %s", (team_id,))
-            for employee_id in team_data['employees'].split(','):
-                cursor.execute("INSERT INTO team_employee (employee_id, team_id) VALUES (%s, %s)", 
-                               (employee_id.strip().lower(), team_id))
+            # Debug log
+            logging.info(f"Executing update query with name={team_data['name']}, description={team_data['description']}")
+            
+            cursor.execute(query, (
+                team_data['name'].lower(),
+                team_data['description'].lower(),
+                team_id
+            ))
+
+            # Update employee assignments
+            cursor.execute("DELETE FROM employee_team WHERE team_id = %s", (team_id,))
+            
+            if 'employees' in team_data and team_data['employees']:
+                for employee_id in team_data['employees'].split(','):
+                    emp_id = employee_id.strip().lower()
+                    if emp_id:
+                        logging.info(f"Adding employee {emp_id} to team {team_id}")
+                        cursor.execute("""
+                            INSERT INTO employee_team (employee_id, team_id) 
+                            VALUES (%s, %s)
+                        """, (emp_id, team_id))
+
             conn.commit()
-            response = {
-                "success": True,
-                "message": "Team updated successfully"
-            }
-            print(response)
             return True
-    except psycopg2.Error as e:
+
+    except Exception as e:
         logging.error(f"Error updating team: {e}")
-        response = {
-            "success": False,
-            "message": "Failed to update team"
-        }
-        return response
+        if conn:
+            conn.rollback()
+        return None
     finally:
         conn.close()
 
@@ -1050,5 +1079,12 @@ def submit_clock_in(clock_in_data):
         return response
     finally:
         conn.close()
+
+
+
+
+
+
+
 
 

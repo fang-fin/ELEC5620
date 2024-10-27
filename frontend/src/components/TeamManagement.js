@@ -3,7 +3,14 @@ import React, { useState, useEffect } from 'react';
 function TeamManagement() {
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState(null);
-  const [teamDetails, setTeamDetails] = useState({});
+  const [teamDetails, setTeamDetails] = useState({
+    name: '',
+    description: '',
+    employees: '',  // Changed to string for comma-separated input
+    totalEarning: 0,
+    totalDuration: 0,
+    teamEfficiency: 0
+  });
 
   useEffect(() => {
     fetchTeams();
@@ -45,27 +52,60 @@ function TeamManagement() {
   };
 
   const handleSubmit = async () => {
+    // Validate required fields
+    if (!teamDetails.name?.trim()) {
+        alert('Team name is required');
+        return;
+    }
+
     try {
-      await fetch(`/api/teams/${selectedTeam}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(teamDetails),
-      });
-      alert('Team updated successfully');
+        // Ensure all fields are defined with default values
+        const payload = {
+            name: teamDetails.name?.trim() || '',
+            description: teamDetails.description?.trim() || '',
+            employees: teamDetails.employees?.trim() || ''
+        };
+
+        console.log('Submitting team data:', payload);
+
+        const response = await fetch(selectedTeam ? `/api/teams/${selectedTeam}` : '/api/teams', {
+            method: selectedTeam ? 'PUT' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        console.log('Server response:', data);
+
+        if (data.success) {
+            alert(selectedTeam ? 'Team updated successfully' : 'Team created successfully');
+            fetchTeams();
+            setSelectedTeam(null);
+            setTeamDetails({
+                name: '',
+                description: '',
+                employees: '',
+                totalEarning: 0,
+                totalDuration: 0,
+                teamEfficiency: 0
+            });
+        } else {
+            alert(data.message || 'Operation failed');
+        }
     } catch (error) {
-      console.error('Error updating team:', error);
+        console.error('Error:', error);
+        alert('Operation failed');
     }
   };
 
   const handleNewTeam = () => {
     setSelectedTeam(null);
-    // Initialize empty team details instead of empty object
     setTeamDetails({
       name: '',
       description: '',
-      employees: [],
+      employees: '',
       totalEarning: 0,
       totalDuration: 0,
       teamEfficiency: 0
@@ -90,92 +130,67 @@ function TeamManagement() {
           </button>
         ))}
         <button
-          onClick={handleNewTeam}
+          onClick={() => {
+            setSelectedTeam(null);
+            setTeamDetails({
+              name: '',
+              description: '',
+              employees: '',
+              totalEarning: 0,
+              totalDuration: 0,
+              teamEfficiency: 0
+            });
+          }}
           className="px-4 py-2 rounded bg-green-500 text-white"
         >
           New Team
         </button>
       </div>
 
-      {/* Team Details - Modified condition */}
-      {(selectedTeam !== null || teamDetails.name !== undefined) && (
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2">
-            {selectedTeam ? 'Team Details' : 'New Team'}
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={teamDetails.name || ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                name="description"
-                value={teamDetails.description || ''}
-                onChange={handleInputChange}
-                rows="3"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              ></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Employees</label>
-              <input
-                type="text"
-                name="employees"
-                value={teamDetails.employees ? teamDetails.employees.join(', ') : ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                placeholder="Enter employee IDs separated by commas"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Total Earning</label>
-              <input
-                type="number"
-                name="totalEarning"
-                value={teamDetails.totalEarning || ''}
-                readOnly
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Total Duration (hours)</label>
-              <input
-                type="number"
-                name="totalDuration"
-                value={teamDetails.totalDuration || ''}
-                readOnly
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Team Efficiency (earning/hour)</label>
-              <input
-                type="number"
-                name="teamEfficiency"
-                value={teamDetails.teamEfficiency || ''}
-                readOnly
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 bg-gray-100"
-              />
-            </div>
+      {/* Team Form */}
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold mb-2">
+          {selectedTeam ? 'Edit Team' : 'New Team'}
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <input
+              type="text"
+              value={teamDetails.name}
+              onChange={(e) => setTeamDetails({...teamDetails, name: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+            />
           </div>
-          <div className="mt-4 text-right">
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              {selectedTeam ? 'Update Team' : 'Create Team'}
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              value={teamDetails.description}
+              onChange={(e) => setTeamDetails({...teamDetails, description: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+              rows="3"
+            />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Employees (comma-separated IDs)
+            </label>
+            <input
+              type="text"
+              value={teamDetails.employees}
+              onChange={(e) => setTeamDetails({...teamDetails, employees: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+              placeholder="e.g., emp1,emp2,emp3"
+            />
+          </div>
+          <button
+            onClick={handleSubmit}
+            className="w-full p-2 bg-blue-500 text-white rounded"
+          >
+            {selectedTeam ? 'Update Team' : 'Create Team'}
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

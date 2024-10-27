@@ -38,25 +38,12 @@ def login():
 
 @app.route('/api/projects', methods=['GET'])
 def get_projects_route():
-    # Debug: Log API call
     logging.info("GET /api/projects called")
-    
     projects = get_projects()
-    
-    # Debug: Log projects data before sending response
-    logging.info(f"Projects data to be sent: {projects}")
-    
+    logging.info(f"Retrieved projects: {projects}")
     if projects is None:
-        return jsonify({
-            "success": False, 
-            "message": "Failed to retrieve projects",
-            "projects": []
-        }), 500
-        
-    return jsonify({
-        "success": True,
-        "projects": projects
-    }), 200
+        return jsonify({"success": False, "message": "Failed to retrieve projects"}), 500
+    return jsonify({"success": True, "projects": projects}), 200
 
 @app.route('/api/projects/<project_id>', methods=['GET'])
 def get_project_details_route(project_id):
@@ -67,7 +54,9 @@ def get_project_details_route(project_id):
 
 @app.route('/api/teams', methods=['GET'])
 def get_teams_route():
+    logging.info("GET /api/teams called")
     teams = get_teams()
+    logging.info(f"Retrieved teams: {teams}")
     if teams is None:
         return jsonify({"success": False, "message": "Failed to retrieve teams"}), 500
     return jsonify({"success": True, "teams": teams}), 200
@@ -156,14 +145,12 @@ def mental_health_route():
 @app.route('/api/projects', methods=['POST'])
 def create_project_route():
     data = request.json
-    # Add debug logs
-    logging.info("Received new project data:")
-    logging.info(f"Project Name: {data.get('name')}")
-    logging.info(f"Description: {data.get('description')}")
-    logging.info(f"Deadline: {data.get('deadline')}")
-    logging.info(f"Employees: {data.get('employees')}")
+    logging.info("POST /api/projects called")
+    logging.info(f"Request data: {data}")
     
     result = create_project(data)
+    logging.info(f"Create project result: {result}")
+    
     if result is None:
         return jsonify({"success": False, "message": "Failed to create project"}), 500
     return jsonify({"success": True, "message": "Project created", "projectId": result}), 201
@@ -179,13 +166,12 @@ def update_project_route(project_id):
 @app.route('/api/teams', methods=['POST'])
 def create_team_route():
     data = request.json
-    # Add debug logs
-    logging.info("Received new team data:")
-    logging.info(f"Team Name: {data.get('name')}")
-    logging.info(f"Description: {data.get('description')}")
-    logging.info(f"Employees: {data.get('employees')}")
+    logging.info("POST /api/teams called")
+    logging.info(f"Request data: {data}")
     
     result = create_team(data)
+    logging.info(f"Create team result: {result}")
+    
     if result is None:
         return jsonify({"success": False, "message": "Failed to create team"}), 500
     return jsonify({"success": True, "message": "Team created", "teamId": result}), 201
@@ -193,7 +179,9 @@ def create_team_route():
 @app.route('/api/teams/<team_id>', methods=['PUT'])
 def update_team_route(team_id):
     data = request.json
-    result = update_team(data, team_id)
+    logging.info(f"PUT /api/teams/{team_id} called with data: {data}")
+    
+    result = update_team(team_id, data)
     if result is None:
         return jsonify({"success": False, "message": "Failed to update team"}), 500
     return jsonify({"success": True, "message": "Team updated"}), 200

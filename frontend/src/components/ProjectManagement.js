@@ -3,7 +3,12 @@ import React, { useState, useEffect } from 'react';
 function ProjectManagement() {
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [projectDetails, setProjectDetails] = useState({});
+  const [projectDetails, setProjectDetails] = useState({
+    name: '',
+    description: '',
+    deadline: '',
+    employees: ''  // Changed to string for comma-separated input
+  });
 
   useEffect(() => {
     fetchProjects();
@@ -66,9 +71,7 @@ function ProjectManagement() {
                 name: '',
                 description: '',
                 deadline: '',
-                employees: [],
-                totalEarning: 0,
-                totalDuration: 0
+                employees: ''
             });
         }
     } catch (error) {
@@ -77,9 +80,7 @@ function ProjectManagement() {
             name: '',
             description: '',
             deadline: '',
-            employees: [],
-            totalEarning: 0,
-            totalDuration: 0
+            employees: ''
         });
     }
   };
@@ -92,17 +93,51 @@ function ProjectManagement() {
   };
 
   const handleSubmit = async () => {
+    if (!projectDetails.name?.trim()) {
+        alert('Project name is required');
+        return;
+    }
+
     try {
-      await fetch(`/api/projects/${selectedProject}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(projectDetails),
-      });
-      alert('Project updated successfully');
+        const payload = {
+            name: projectDetails.name?.trim() || '',
+            description: projectDetails.description?.trim() || '',
+            deadline: projectDetails.deadline,
+            employees: projectDetails.employees?.trim() || ''
+        };
+
+        console.log('Submitting project data:', payload);
+
+        const response = await fetch(selectedProject ? `/api/projects/${selectedProject}` : '/api/projects', {
+            method: selectedProject ? 'PUT' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Server response:', data);
+
+        if (data.success) {
+            console.log('Operation successful:', data);
+            alert(selectedProject ? 'Project updated successfully' : 'Project created successfully');
+            fetchProjects();
+            setSelectedProject(null);
+            setProjectDetails({
+                name: '',
+                description: '',
+                deadline: '',
+                employees: ''
+            });
+        } else {
+            console.error('Operation failed:', data);
+            alert(data.message || 'Operation failed');
+        }
     } catch (error) {
-      console.error('Error updating project:', error);
+        console.error('Error:', error);
+        alert('Operation failed');
     }
   };
 
@@ -113,9 +148,7 @@ function ProjectManagement() {
       name: '',
       description: '',
       deadline: '',
-      employees: [],
-      totalEarning: 0,
-      totalDuration: 0
+      employees: ''
     });
   };
 
@@ -144,87 +177,59 @@ function ProjectManagement() {
         </button>
       </div>
 
-      {/* Project Details - Modified condition */}
-      {(selectedProject !== null || projectDetails.name !== undefined) && (
-        <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2">
-            {selectedProject ? 'Project Details' : 'New Project'}
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                name="name"
-                value={projectDetails.name || ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                name="description"
-                value={projectDetails.description || ''}
-                onChange={handleInputChange}
-                rows="3"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              ></textarea>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Deadline</label>
-              <input
-                type="date"
-                name="deadline"
-                value={projectDetails.deadline || ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Employees</label>
-              <input
-                type="text"
-                name="employees"
-                value={projectDetails.employees ? projectDetails.employees.join(', ') : ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                placeholder="Enter employee IDs separated by commas"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Total Earning</label>
-              <input
-                type="number"
-                name="totalEarning"
-                value={projectDetails.totalEarning || ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                readOnly
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Total Duration (hours)</label>
-              <input
-                type="number"
-                name="totalDuration"
-                value={projectDetails.totalDuration || ''}
-                onChange={handleInputChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                readOnly
-              />
-            </div>
+      {/* Project Form */}
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold mb-2">
+          {selectedProject ? 'Edit Project' : 'New Project'}
+        </h3>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <input
+              type="text"
+              value={projectDetails.name}
+              onChange={(e) => setProjectDetails({...projectDetails, name: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+            />
           </div>
-          <div className="mt-4 text-right">
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              {selectedProject ? 'Update Project' : 'Create Project'}
-            </button>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              value={projectDetails.description}
+              onChange={(e) => setProjectDetails({...projectDetails, description: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+              rows="3"
+            />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Deadline</label>
+            <input
+              type="date"
+              value={projectDetails.deadline}
+              onChange={(e) => setProjectDetails({...projectDetails, deadline: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Employees (comma-separated IDs)
+            </label>
+            <input
+              type="text"
+              value={projectDetails.employees}
+              onChange={(e) => setProjectDetails({...projectDetails, employees: e.target.value})}
+              className="mt-1 block w-full rounded-md border p-2"
+              placeholder="e.g., emp1,emp2,emp3"
+            />
+          </div>
+          <button
+            onClick={handleSubmit}
+            className="w-full p-2 bg-blue-500 text-white rounded"
+          >
+            {selectedProject ? 'Update Project' : 'Create Project'}
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
