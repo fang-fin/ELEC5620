@@ -31,8 +31,8 @@ function ClockIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const start = new Date(`${date}T${startTime}`); // 组合日期和时间
+    const end = new Date(`${date}T${endTime}`);     // 组合日期和时间
     const duration = (end - start) / 1000 / 60; // Duration in minutes
 
     if (duration < 0) {
@@ -56,8 +56,8 @@ function ClockIn() {
         },
         body: JSON.stringify({
           projectName,
-          startTime: formattedStartTime,
-          endTime: formattedEndTime,
+          startTime: start.toISOString(), 
+          endTime: end.toISOString(),    
           userId,
         }),
       });

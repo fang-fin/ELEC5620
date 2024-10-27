@@ -45,11 +45,14 @@ function Login({ setIsLoggedIn, setUserRole }) {
       } else {
         const errorData = await response.json();
         console.error('Login failed:', errorData);
-        alert('Invalid username or password');
+        alert(`Login failed: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Login error:', error);
-      alert('An error occurred during login. Please try again.');
+      console.error('Login error details:', {
+        message: error.message,
+        stack: error.stack
+      });
+      alert('Connection error: ' + error.message);
     }
   };
 

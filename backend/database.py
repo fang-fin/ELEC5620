@@ -4,10 +4,15 @@ import logging
 
 def openConnection():
 
-    database_name = "elec5620"
-    userid = "postgres"
-    passwd = "PASSword123."
-    myHost = "elec5620.cdce2uw4szzi.ap-southeast-2.rds.amazonaws.com"  # RDS' Endpoint
+    # database_name = "elec5620"
+    # userid = "postgres"
+    # passwd = "PASSword123."
+    # myHost = "elec5620.cdce2uw4szzi.ap-southeast-2.rds.amazonaws.com"  # RDS' Endpoint
+    database_name = "ELEC5620"          
+    userid = "postgres"                  
+    passwd = "feet"        
+    myHost = "localhost"  
+
 
     conn = None
     try:

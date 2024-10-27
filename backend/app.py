@@ -6,20 +6,35 @@ app = Flask(__name__)
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    data = request.json
-    username = data.get('username', '').lower()
-    password = data.get('password', '')
-    
-    user_data = check_login(username, password)
-    
-    if user_data:
+    try:
+        data = request.json
+        username = data.get('username', '').lower()
+        password = data.get('password', '')
+        
+        logging.info(f"Login attempt for user: {username}")
+        
+        user_data = check_login(username, password)
+        
+        if user_data:
+            logging.info(f"Login successful for user: {username}")
+            return jsonify({
+                "success": True,
+                "message": "Login successful",
+                "role": user_data['role']
+            }), 200
+        else:
+            logging.warning(f"Login failed for user: {username}")
+            return jsonify({
+                "success": False, 
+                "message": "Invalid credentials"
+            }), 401
+            
+    except Exception as e:
+        logging.error(f"Login error: {str(e)}")
         return jsonify({
-            "success": True,
-            "message": "Login successful",
-            "role": user_data['role']
-        }), 200
-    else:
-        return jsonify({"success": False, "message": "Invalid credentials"}), 401
+            "success": False,
+            "message": f"Server error: {str(e)}"
+        }), 500
 
 @app.route('/api/projects', methods=['GET'])
 def get_projects_route():

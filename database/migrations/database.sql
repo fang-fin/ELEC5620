@@ -781,7 +781,6 @@ COPY public.clock_in_records (clock_in_id, employee_id, project_id, date, start_
 24	ganderson	2	\N	2024-10-23 09:25:00	2024-10-23 18:22:00	8.95	\N
 \.
 
-
 --
 -- Data for Name: employee; Type: TABLE DATA; Schema: public; Owner: postgres
 --
