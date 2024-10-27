@@ -310,7 +310,9 @@ def get_feedback():
     if not conn:
         logging.error("Failed to connect to the database.")
         return None
+        
     logging.info("Connected to the database successfully")
+    
     try:
         with conn.cursor() as cursor:
             query = """
@@ -320,22 +322,29 @@ def get_feedback():
             JOIN employee e ON f.employee_id = e.employee_id
             JOIN users u ON e.employee_id = u.user_id
             """
+            logging.info(f"Executing query: {query}")
             cursor.execute(query)
             feedbacks = cursor.fetchall()
+            logging.info(f"Raw feedback data: {feedbacks}")
 
             feedback_list = []
             for feedback in feedbacks:
-                feedback_list.append({
+                feedback_item = {
                     'id': str(feedback[0]), 
                     'employeeName': feedback[1],  
                     'content': feedback[2],  
                     'timestamp': feedback[3].isoformat()  
-                })
+                }
+                feedback_list.append(feedback_item)
+                logging.info(f"Processed feedback item: {feedback_item}")
 
-            return {
+            result = {
                 'employees': feedback_list, 
                 'success': True
             }
+            logging.info(f"Final result: {result}")
+            return result
+            
     except psycopg2.Error as e:
         logging.error(f"Error fetching feedback: {e}")
         return None
@@ -1079,6 +1088,7 @@ def submit_clock_in(clock_in_data):
         return response
     finally:
         conn.close()
+
 
 
 

@@ -92,10 +92,22 @@ def get_psychological_assessments_route():
 
 @app.route('/api/feedback', methods=['GET'])
 def get_feedback_route():
+    logging.info("GET /api/feedback called")
     feedback = get_feedback()
+    logging.info(f"Retrieved feedback: {feedback}")
+    
     if feedback is None:
-        return jsonify({"success": False, "message": "Failed to retrieve feedback"}), 500
-    return jsonify({"success": True, "feedback": feedback}), 200
+        logging.error("Failed to retrieve feedback")
+        return jsonify({
+            "success": False, 
+            "message": "Failed to retrieve feedback",
+            "feedbackHistory": []
+        }), 500
+        
+    return jsonify({
+        "success": True,
+        "feedbackHistory": feedback.get('employees', [])
+    }), 200
 
 @app.route('/api/clock-in-records', methods=['GET'])
 def get_clock_in_records_route():
