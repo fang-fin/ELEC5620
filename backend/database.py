@@ -905,41 +905,59 @@ def add_employee(employee_data):
     
     try:
         with conn.cursor() as cursor:
+            # retrieve information from the request     
             name = employee_data['name']
             age = employee_data['age']
             gender = employee_data['gender']
             role = employee_data['role']
-            salary = employee_data.get('salary', 40000)  
-            password = 'password'  
+            salary = employee_data.get('salary', 40000)  # default salary
+            password = 'password'  # default password
             
+            # name processing
             name_parts = name.split()
             first_name = ' '.join(name_parts[:-1])
             last_name = name_parts[-1] if len(name_parts) > 1 else ''
+            
+            # generate user_id
             user_id = first_name[0].lower() + last_name.lower() if last_name else first_name.lower()
+            
+            logging.info(f"Attempting to add employee with user_id: {user_id}")
 
-            logging.info(f"Executing query: {insert_employee_query} with values: ({user_id}, 0, 0)")
-
+            # first insert into users table
             insert_user_query = """
             INSERT INTO users (user_id, firstname, lastname, age, salary, gender, role, password, date)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURRENT_DATE)
             """
-            cursor.execute(insert_user_query, (user_id, first_name, last_name, age, salary, gender, role, password))
+            cursor.execute(insert_user_query, (
+                user_id, first_name, last_name, age, salary, gender, role, password
+            ))
+            logging.info("User inserted successfully")
 
+            # then insert into employee table
             insert_employee_query = """
             INSERT INTO employee (employee_id, total_work_duration, number_of_projects)
             VALUES (%s, %s, %s)
             """
-            cursor.execute(insert_employee_query, (user_id, 0, 0))  
+            cursor.execute(insert_employee_query, (user_id, 0, 0))
+            logging.info("Employee record inserted successfully")
             
             conn.commit()
-            logging.info(f"Employee {user_id} inserted successfully.")
+            logging.info(f"Employee {user_id} added successfully")
             
-            return {'success': True, 'user_id': user_id}
+            return {
+                'success': True,
+                'user_id': user_id,
+                'message': 'Employee added successfully'
+            }
     
     except psycopg2.Error as e:
         logging.error(f"Error adding employee: {e}")
-        conn.rollback()  
-        return {'message': f"Error adding employee: {str(e)}", 'success': False}
+        if conn:
+            conn.rollback()
+        return {
+            'success': False,
+            'message': f"Error adding employee: {str(e)}"
+        }
     
     finally:
         if conn:
@@ -1088,6 +1106,7 @@ def submit_clock_in(clock_in_data):
         return response
     finally:
         conn.close()
+
 
 
 
