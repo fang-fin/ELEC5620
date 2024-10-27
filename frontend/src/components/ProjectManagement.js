@@ -12,22 +12,75 @@ function ProjectManagement() {
   const fetchProjects = async () => {
     try {
       const response = await fetch('/api/projects');
+      // Debug: Log raw response
+      console.log("Raw API response:", response);
+      
       const data = await response.json();
-      console.log("Fetched projects:", data.projects.map(project => project.id));
-      setProjects(data.projects);
+      // Debug: Log parsed data
+      console.log("Parsed API response data:", data);
+      
+      if (data.success && Array.isArray(data.projects)) {
+        // Debug: Log projects array
+        console.log("Projects array:", data.projects);
+        
+        // Verify each project has required properties
+        const validProjects = data.projects.filter(project => {
+          const isValid = project && project.id && project.name;
+          if (!isValid) {
+            console.warn("Invalid project data:", project);
+          }
+          return isValid;
+        });
+        
+        console.log("Validated projects:", validProjects);
+        setProjects(validProjects);
+      } else {
+        console.error('Projects data is not in expected format:', data);
+        setProjects([]);
+      }
     } catch (error) {
       console.error('Error fetching projects:', error);
+      setProjects([]);
     }
   };
 
   const handleProjectSelect = async (projectId) => {
     try {
-      const response = await fetch(`/api/projects/${projectId}`);
-      const data = await response.json();
-      setSelectedProject(projectId);
-      setProjectDetails(data.projectDetails);
+        // Add debug log
+        console.log("Fetching details for project:", projectId);
+        
+        const response = await fetch(`/api/projects/${projectId}`);
+        // Log raw response
+        console.log("Raw project details response:", response);
+        
+        const data = await response.json();
+        console.log("Project details data:", data);
+        
+        if (data.success && data.projectDetails) {
+            setSelectedProject(projectId);
+            setProjectDetails(data.projectDetails);
+        } else {
+            console.error('Failed to fetch project details:', data);
+            // Initialize with empty values instead of empty object
+            setProjectDetails({
+                name: '',
+                description: '',
+                deadline: '',
+                employees: [],
+                totalEarning: 0,
+                totalDuration: 0
+            });
+        }
     } catch (error) {
-      console.error('Error fetching project details:', error);
+        console.error('Error fetching project details:', error);
+        setProjectDetails({
+            name: '',
+            description: '',
+            deadline: '',
+            employees: [],
+            totalEarning: 0,
+            totalDuration: 0
+        });
     }
   };
 
@@ -55,7 +108,15 @@ function ProjectManagement() {
 
   const handleNewProject = () => {
     setSelectedProject(null);
-    setProjectDetails({});
+    // Initialize empty project details instead of empty object
+    setProjectDetails({
+      name: '',
+      description: '',
+      deadline: '',
+      employees: [],
+      totalEarning: 0,
+      totalDuration: 0
+    });
   };
 
   return (
@@ -83,10 +144,12 @@ function ProjectManagement() {
         </button>
       </div>
 
-      {/* Project Details */}
-      {selectedProject && (
+      {/* Project Details - Modified condition */}
+      {(selectedProject !== null || projectDetails.name !== undefined) && (
         <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2">Project Details</h3>
+          <h3 className="text-xl font-semibold mb-2">
+            {selectedProject ? 'Project Details' : 'New Project'}
+          </h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -157,7 +220,7 @@ function ProjectManagement() {
               onClick={handleSubmit}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Confirm
+              {selectedProject ? 'Update Project' : 'Create Project'}
             </button>
           </div>
         </div>

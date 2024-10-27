@@ -61,7 +61,15 @@ function TeamManagement() {
 
   const handleNewTeam = () => {
     setSelectedTeam(null);
-    setTeamDetails({});
+    // Initialize empty team details instead of empty object
+    setTeamDetails({
+      name: '',
+      description: '',
+      employees: [],
+      totalEarning: 0,
+      totalDuration: 0,
+      teamEfficiency: 0
+    });
   };
 
   return (
@@ -89,10 +97,12 @@ function TeamManagement() {
         </button>
       </div>
 
-      {/* Team Details */}
-      {selectedTeam && (
+      {/* Team Details - Modified condition */}
+      {(selectedTeam !== null || teamDetails.name !== undefined) && (
         <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2">Team Details</h3>
+          <h3 className="text-xl font-semibold mb-2">
+            {selectedTeam ? 'Team Details' : 'New Team'}
+          </h3>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -161,7 +171,7 @@ function TeamManagement() {
               onClick={handleSubmit}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Confirm
+              {selectedTeam ? 'Update Team' : 'Create Team'}
             </button>
           </div>
         </div>

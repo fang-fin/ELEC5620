@@ -62,19 +62,27 @@ def get_projects():
 
     try:
         with conn.cursor() as cursor:
+            # Query to get all projects
             query = """
             SELECT project_id, project_name
             FROM projects
             """
             cursor.execute(query)
             projects = cursor.fetchall()
+            
+            # Debug: Log raw data from database
+            logging.info(f"Raw projects data from database: {projects}")
 
             project_list = []
             for project in projects:
-                project_list.append({
-                    'Project_id': project[0],
-                    'project_name': project[1]
-                })
+                project_dict = {
+                    'id': str(project[0]),  # Convert ID to string
+                    'name': project[1]      # Project name
+                }
+                project_list.append(project_dict)
+                
+            # Debug: Log formatted project list
+            logging.info(f"Formatted project list: {project_list}")
 
             return project_list
     except psycopg2.Error as e:
@@ -91,22 +99,22 @@ def get_project_details(project_id):
 
     try:
         with conn.cursor() as cursor:
-            # Fetch project details including duration based on start_date and deadline
+            # 修改查询，使用 DATE 类型转换
             query = """
             SELECT p.project_id, p.project_name, p.description, p.deadline, p.start_date,
-                   SUM(e.salary * ep.hours_worked) AS total_earning, 
-                   EXTRACT(EPOCH FROM (p.deadline - p.start_date)) / 3600 AS total_duration
+                   p.revenue AS total_earning, 
+                   EXTRACT(EPOCH FROM (p.deadline::timestamp - p.start_date::timestamp)) / 3600 AS total_duration
             FROM projects p
-            LEFT JOIN employee_project ep ON p.project_id = ep.project_id
-            LEFT JOIN employee e ON e.employee_id = ep.employee_id
             WHERE p.project_id = %s
-            GROUP BY p.project_id
             """
             cursor.execute(query, (project_id,))
             project = cursor.fetchone()
 
             if project:
-                # Fetch employees working on the project
+                # Debug log
+                logging.info(f"Found project: {project}")
+                
+                # 获取项目相关的员工
                 employee_query = """
                 SELECT e.employee_id 
                 FROM employee_project ep
@@ -120,13 +128,16 @@ def get_project_details(project_id):
                     "id": str(project[0]),
                     "name": project[1],
                     "description": project[2],
-                    "deadline": project[3].isoformat(),  # Convert to ISO 8601 format
+                    "deadline": project[3].isoformat() if project[3] else None,
                     "employees": employees,
                     "totalEarning": float(project[5]) if project[5] else 0.0,
-                    "totalDuration": float(project[6]) if project[6] else 0.0  # Duration in hours
+                    "totalDuration": float(project[6]) if project[6] else 0.0
                 }
-            else:
-                return None
+            
+            # Debug log
+            logging.info(f"No project found with ID: {project_id}")
+            return None
+            
     except psycopg2.Error as e:
         logging.error(f"Error fetching project details: {e}")
         return None
@@ -1039,3 +1050,5 @@ def submit_clock_in(clock_in_data):
         return response
     finally:
         conn.close()
+
+
