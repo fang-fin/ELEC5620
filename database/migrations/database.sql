@@ -280,8 +280,6 @@
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -770,6 +768,194 @@ ALTER TABLE ONLY public.psychological_assessments ALTER COLUMN psy_id SET DEFAUL
 --
 
 ALTER TABLE ONLY public.team_manager ALTER COLUMN team_id SET DEFAULT nextval('public.team_team_id_seq'::regclass);
+
+
+--
+-- Data for Name: clock_in_records; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.clock_in_records (clock_in_id, employee_id, project_id, date, start_time, end_time, duration, status) FROM stdin;
+1	ganderson	1	2024-10-13	2024-10-13 08:00:00	2024-10-13 16:00:00	8.00	Normal
+2	ganderson	2	2024-10-14	2024-10-14 09:00:00	2024-10-14 17:00:00	8.00	Normal
+23	ganderson	1	\N	2024-10-24 09:14:00	2024-10-24 17:14:00	8.00	\N
+24	ganderson	2	\N	2024-10-23 09:25:00	2024-10-23 18:22:00	8.95	\N
+\.
+
+
+--
+-- Data for Name: employee; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.employee (employee_id, total_work_duration, number_of_projects) FROM stdin;
+ganderson	40.1	3
+ttest	0.0	0
+\.
+
+
+--
+-- Data for Name: employee_project; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.employee_project (employee_id, project_id) FROM stdin;
+ganderson	1
+ganderson	2
+ganderson	3
+\.
+
+
+--
+-- Data for Name: employee_team; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.employee_team (employee_id, team_id) FROM stdin;
+ganderson	1
+ganderson	2
+ttest	2
+\.
+
+
+--
+-- Data for Name: feedback; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.feedback (feedback_id, employee_id, hr_id, feedback_content, response, "timestamp", status, response_time) FROM stdin;
+1	ganderson	ajones	Need more work-life balance.	\N	2024-10-22 19:29:35.959157	OnProgress	\N
+2	ganderson	ajones	Request for project resources.	\N	2024-10-22 19:29:35.959157	Solved	2024-10-15 14:00:00
+6	ganderson	\N	Test feedback for work-life balance.	\N	2024-10-26 07:00:00	Waiting	\N
+7	ganderson	\N	test for submit	\N	2024-10-26 17:21:32.647	Waiting	\N
+8	ganderson	\N	test for submit under employee_id	\N	2024-10-26 17:35:42.004	Waiting	\N
+\.
+
+
+--
+-- Data for Name: financial_records; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.financial_records (item_id, project_id, employee_id, description, category, amount, "time") FROM stdin;
+1	1	ganderson	Income from client A	Income	50000.00	2024-10-22 19:29:35.948982
+2	1	ganderson	Expense on marketing	Expense	20000.00	2024-10-22 19:29:35.948982
+3	2	ganderson	Income from client B	Income	100000.00	2024-10-22 19:29:35.948982
+4	2	ganderson	Expense on development	Expense	50000.00	2024-10-22 19:29:35.948982
+7	1	\N	\N	Income	500.00	2024-10-26 15:30:00
+8	1	\N	\N	Expense	200.00	2024-10-26 15:30:00
+11	2	ganderson	\N	Income	50.00	2024-10-26 06:17:34.80721
+12	2	ganderson	\N	Expense	50.00	2024-10-26 06:17:34.80721
+\.
+
+
+--
+-- Data for Name: hr; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.hr (hr_id, total_work_duration) FROM stdin;
+ajones	56.0
+\.
+
+
+--
+-- Data for Name: manager; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.manager (manager_id, total_work_duration, number_of_projects, team_id) FROM stdin;
+jwalker	40.1	1	1
+\.
+
+
+--
+-- Data for Name: projects; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.projects (project_id, project_name, description, start_date, deadline, revenue, cost, roi, team_id) FROM stdin;
+1	Project A	Description of Project A	2024-10-13	2024-12-31	150000.00	100000.00	50.00000000000000000000	1
+2	Project B	Description of Project B	2024-10-13	2024-11-30	200000.00	120000.00	66.66666666666666666700	1
+3	Project C	A testing project	2024-10-23	2024-12-31	\N	\N	\N	\N
+\.
+
+
+--
+-- Data for Name: psychological_assessments; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.psychological_assessments (psy_id, employee_id, assessment, "timestamp") FROM stdin;
+1	ganderson	Assessment for work-life balance	2024-10-14 09:00:00
+3	ganderson	Assessment text here	2024-10-26 09:00:00
+4	ganderson	\N	2024-10-26 09:00:20
+5	ganderson	q1: test\nq2: s\nq3: s	2024-10-26 17:20:05.249
+6	ganderson	q1: test \nq2: test\nq3: test	2024-10-26 17:27:00.626
+\.
+
+
+--
+-- Data for Name: team_manager; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.team_manager (team_id, manager_id) FROM stdin;
+1	jwalker
+\.
+
+
+--
+-- Data for Name: teams; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.teams (id, name, description, total_earning, total_duration, team_efficiency) FROM stdin;
+1	Team X	Description for Team X	25000.00	250	100
+2	Team Y	Description for Team Y	30000.00	300	100
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.users (user_id, password, firstname, lastname, age, salary, role, date, gender) FROM stdin;
+ajones	098	Anna	Jones	25	41000.00	hr	2024-10-13	\N
+jwalker	876	James	Walker	22	38890.50	manager	2024-10-13	\N
+ganderson	987	Glen	Anderson	30	49500.80	employee	2024-10-13	male
+ttest	password	test	test	25	\N	employee	2024-10-24	female
+\.
+
+
+--
+-- Name: clock_in_records_clock_in_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.clock_in_records_clock_in_id_seq', 24, true);
+
+
+--
+-- Name: feedback_feedback_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.feedback_feedback_id_seq', 8, true);
+
+
+--
+-- Name: financial_records_item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.financial_records_item_id_seq', 12, true);
+
+
+--
+-- Name: projects_project_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.projects_project_id_seq', 3, true);
+
+
+--
+-- Name: psychological_assessments_psy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.psychological_assessments_psy_id_seq', 6, true);
+
+
+--
+-- Name: team_team_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.team_team_id_seq', 1, true);
 
 
 --
