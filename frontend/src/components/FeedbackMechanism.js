@@ -115,33 +115,37 @@ function FeedbackMechanism() {
     fetchFeedbackHistory();
   }, []);
 
-  // 获取反馈历史记录
+  // fetch feedback history
   const fetchFeedbackHistory = async () => {
     try {
-      const response = await fetch('/api/feedback'); // 使用正确的路径
+      console.log('Fetching feedback history...');
+      const response = await fetch('/api/feedback');
+      console.log('Feedback response:', response);
+      
       const data = await response.json();
-  
-      // 提取反馈历史记录
-      if (data.feedback && Array.isArray(data.feedback.employees)) {  // 确保与后端返回的数据字段匹配
-        setFeedbackHistory(data.feedback.employees); // 设置反馈历史记录
+      console.log('Feedback data:', data);
+      
+      if (data.success && Array.isArray(data.feedbackHistory)) {
+        console.log('Setting feedback history:', data.feedbackHistory);
+        setFeedbackHistory(data.feedbackHistory);
       } else {
-        console.error('Employees is not an array', data);
-        setFeedbackHistory([]);  
+        console.warn('Unexpected feedback data format:', data);
+        setFeedbackHistory([]);
       }
     } catch (error) {
-      console.error('Error fetching feedbacks:', error);
-      setFeedbackHistory([]);  
+      console.error('Error fetching feedback:', error);
+      setFeedbackHistory([]);
     }
   };
   
 
-  // 提交反馈
+  // submit feedback
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const userId = localStorage.getItem('userId');
     
-    // add debug information before request
+      // add debug information before request
     console.log('Submitting feedback:', {
       content: feedback,
       userId: userId,
@@ -150,7 +154,7 @@ function FeedbackMechanism() {
 
 
     try {
-      const response = await fetch('/api/feedback', { // 使用正确的路径
+      const response = await fetch('/api/feedback', { // use correct path
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +162,7 @@ function FeedbackMechanism() {
         body: JSON.stringify({
           content: feedback,
           timestamp: new Date().toISOString(),
-          userId: userId  // 传递用户ID
+          userId: userId  // pass user_id
         }),
       });
       
@@ -170,8 +174,8 @@ function FeedbackMechanism() {
 
       if (response.ok) {
         alert('Feedback submitted successfully');
-        setFeedback(''); // 清空反馈输入框
-        fetchFeedbackHistory(); // 重新获取反馈历史记录
+        setFeedback(''); // clear feedback input
+        fetchFeedbackHistory(); // re-fetch feedback history
       } else {
         alert('Failed to submit feedback');
       }
@@ -184,7 +188,7 @@ function FeedbackMechanism() {
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-bold mb-4">Feedback Mechanism</h2>
       
-      {/* 提交反馈 */}
+      {/* submit feedback */}
       <div className="mb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -205,7 +209,7 @@ function FeedbackMechanism() {
         </form>
       </div>
 
-      {/* 反馈历史记录 */}
+      {/* feedback history */}
       <div>
         <h3 className="text-xl font-semibold mb-2">Feedback History</h3>
         <ul className="space-y-2">
@@ -222,4 +226,3 @@ function FeedbackMechanism() {
 }
 
 export default FeedbackMechanism;
-

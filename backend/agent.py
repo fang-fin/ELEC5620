@@ -1,5 +1,6 @@
 # TODO: develop langchain agent
 
+from employee_agent import EmployeeAgent
 from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, SystemMessage
 from dotenv import load_dotenv
@@ -15,10 +16,16 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
+# Create a single instance of EmployeeAgent to maintain conversation state
+employee_agent = EmployeeAgent()
 
 def process_personal_savings(message, user_id):
+    """Process personal savings related queries using EmployeeAgent"""
     try:
+        # Debug log
+        logger.info(f"Processing personal savings message for user {user_id}: {message}")
+        
+        # Check API key
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             logger.error("OpenAI API key not found")
@@ -27,65 +34,32 @@ def process_personal_savings(message, user_id):
                 "success": False
             }
         
-        # examine API key
+        # Check API key type
         if api_key.startswith('sk-proj'):
             logger.warning("Using project API key, which may have limitations")
         
-        # avoiding rate limit
-        time.sleep(5)  
+        # Add delay to avoid rate limits
+        time.sleep(5)
         
-        # initialize ChatOpenAI
-        logger.info("Initializing ChatOpenAI...")
-        chat = ChatOpenAI(
-            temperature=0.7,
-            model_name="gpt-3.5-turbo",
-            openai_api_key=api_key,
-            request_timeout=30  
-        )
-        logger.info("ChatOpenAI initialized successfully")
-
-        # Create system message for context
-        system_message = SystemMessage(content="""
-        You are a personal savings assistant. Your role is to:
-        1. Provide financial advice
-        2. Help with budgeting
-        3. Suggest saving strategies
-        4. Answer questions about personal finance
-        Be friendly and professional in your responses.
-        """)
-
-        # Create human message from user input
-        human_message = HumanMessage(content=message)
-
-        # Debug logs
-        logger.info(f"Processing message for user {user_id}: {message}")
-
-        # Get response from ChatGPT with retry mechanism
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = chat([system_message, human_message])
-                logger.info(f"AI response: {response.content}")
-                return {
-                    "reply": response.content,
-                    "success": True
-                }
-            except openai.RateLimitError as e:
-                if attempt < max_retries - 1:
-                    wait_time = (attempt + 1) * 10  
-                    logger.warning(f"Rate limit hit, waiting {wait_time} seconds before retry...")
-                    time.sleep(wait_time)
-                else:
-                    raise
-
-    except openai.RateLimitError as e:
-        logger.error(f"Rate limit exceeded after retries: {e}")
-        return {
-            "reply": "Service temporarily unavailable due to high demand. Please try again in a few minutes.",
-            "success": False
-        }
+        # Process message using EmployeeAgent
+        try:
+            response = employee_agent.process_message(message, user_id)
+            logger.info(f"EmployeeAgent response: {response}")
+            
+            return {
+                "reply": response,
+                "success": True
+            }
+            
+        except openai.RateLimitError as e:
+            logger.error(f"Rate limit exceeded: {e}")
+            return {
+                "reply": "Service temporarily unavailable due to high demand. Please try again in a few minutes.",
+                "success": False
+            }
+            
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        logger.error(f"Error in process_personal_savings: {str(e)}")
         return {
             "reply": "An unexpected error occurred.",
             "success": False

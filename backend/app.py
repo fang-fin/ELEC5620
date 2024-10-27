@@ -94,20 +94,17 @@ def get_psychological_assessments_route():
 def get_feedback_route():
     logging.info("GET /api/feedback called")
     feedback = get_feedback()
-    logging.info(f"Retrieved feedback: {feedback}")
     
     if feedback is None:
         logging.error("Failed to retrieve feedback")
         return jsonify({
-            "success": False, 
+            "success": False,
             "message": "Failed to retrieve feedback",
             "feedbackHistory": []
         }), 500
         
-    return jsonify({
-        "success": True,
-        "feedbackHistory": feedback.get('employees', [])
-    }), 200
+    logging.info(f"Retrieved feedback: {feedback}")
+    return jsonify(feedback), 200
 
 @app.route('/api/clock-in-records', methods=['GET'])
 def get_clock_in_records_route():
@@ -216,11 +213,27 @@ def submit_psychological_assessment_route():
 
 @app.route('/api/feedback', methods=['POST'])
 def submit_feedback_route():
-    data = request.json
-    result = submit_feedback(data)
-    if result is None:
-        return jsonify({"success": False, "message": "Failed to submit feedback"}), 500
-    return jsonify({"success": True, "message": "Feedback submitted", "feedbackId": result}), 201
+    try:
+        data = request.json
+        logging.info(f"Received feedback submission: {data}")
+        
+        result = submit_feedback(data)
+        if result is None:
+            logging.error("Failed to submit feedback")
+            return jsonify({
+                "success": False,
+                "message": "Failed to submit feedback"
+            }), 500
+            
+        logging.info(f"Feedback submission result: {result}")
+        return jsonify(result), 201
+        
+    except Exception as e:
+        logging.error(f"Error in submit_feedback_route: {str(e)}")
+        return jsonify({
+            "success": False,
+            "message": f"Server error: {str(e)}"
+        }), 500
 
 @app.route('/api/employees', methods=['POST'])
 def add_employee_route():
