@@ -2,36 +2,24 @@ import React, { useState, useEffect } from 'react';
 
 function ClockIn() {
   const [projectName, setProjectName] = useState('');
+  const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [clockInRecords, setClockInRecords] = useState([]);
+  const userId = localStorage.getItem('userId'); // 从 localStorage 获取 userId
 
   useEffect(() => {
     fetchClockInRecords();
   }, []);
 
-  // const fetchClockInRecords = async () => {
-  //   try {
-  //     const response = await fetch('/api/clock-in-records');
-  //     const data = await response.json();
-  //     setClockInRecords(data.records);
-  //   } catch (error) {
-  //     console.error('Error fetching clock-in records:', error);
-  //   }
-  // };
   const fetchClockInRecords = async () => {
     try {
       const response = await fetch('/api/clock-in-records');
       const data = await response.json();
-  
-      console.log('Fetched data:', data);
-      console.log('data.records:', data.records);
-  
+
       if (data.success && data.records && Array.isArray(data.records.records)) {
         setClockInRecords(data.records.records);  
-        console.log('clockInRecords successfully set:', data.records.records);
       } else {
-        console.error('clockInRecords is not an array or request failed', data);
         setClockInRecords([]);  
       }
     } catch (error) {
@@ -39,10 +27,10 @@ function ClockIn() {
       setClockInRecords([]);  
     }
   };
-  
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const start = new Date(startTime);
     const end = new Date(endTime);
     const duration = (end - start) / 1000 / 60; // Duration in minutes
@@ -68,9 +56,9 @@ function ClockIn() {
         },
         body: JSON.stringify({
           projectName,
-          duration,
-          startTime: start.toISOString(),
-          endTime: end.toISOString(),
+          startTime: formattedStartTime,
+          endTime: formattedEndTime,
+          userId,
         }),
       });
       
@@ -83,6 +71,7 @@ function ClockIn() {
       if (response.ok) {
         alert('Clock-in record submitted successfully');
         setProjectName('');
+        setDate('');
         setStartTime('');
         setEndTime('');
         fetchClockInRecords();
@@ -115,10 +104,22 @@ function ClockIn() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Time
+              Date
             </label>
             <input
-              type="datetime-local"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Start Time 
+            </label>
+            <input
+              type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               className="w-full p-2 border rounded"
@@ -127,10 +128,10 @@ function ClockIn() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Time
+              End Time 
             </label>
             <input
-              type="datetime-local"
+              type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               className="w-full p-2 border rounded"
@@ -142,7 +143,7 @@ function ClockIn() {
           </button>
         </form>
       </div>
-
+      
       {/* Clock-In Records */}
       <div>
         <h3 className="text-xl font-semibold mb-2">Clock-In Records</h3>

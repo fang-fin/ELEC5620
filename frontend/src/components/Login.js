@@ -9,6 +9,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Attempting login with:', { username, password });
+
     try {
       const response = await fetch('/api/login', {
         method: 'POST',
@@ -26,10 +27,21 @@ function Login({ setIsLoggedIn, setUserRole }) {
       if (response.ok) {
         const data = await response.json();
         console.log('Login successful:', data);
-        setIsLoggedIn(true);
-        setUserRole(data.role);
-        localStorage.setItem('userId', data.userId); 
-        navigate('/chat');
+
+        // 将 username 作为 userId 存储
+        if (data.role) {
+          setIsLoggedIn(true);
+          setUserRole(data.role);
+
+          // 使用 username 作为 userId
+          localStorage.setItem('userId', username.toLowerCase()); 
+          console.log('userId stored in localStorage:', localStorage.getItem('userId'));
+
+          navigate('/chat');
+        } else {
+          console.error('Role missing in response:', data);
+          alert('Login response missing required data.');
+        }
       } else {
         const errorData = await response.json();
         console.error('Login failed:', errorData);
@@ -51,6 +63,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           className="w-full p-2 mb-3 border rounded"
+          required
         />
         <input
           type="password"
@@ -58,6 +71,7 @@ function Login({ setIsLoggedIn, setUserRole }) {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full p-2 mb-3 border rounded"
+          required
         />
         <button type="submit" className="w-full p-2 bg-blue-500 text-white rounded">
           Login
