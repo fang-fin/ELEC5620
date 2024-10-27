@@ -9,19 +9,27 @@ function AdviceBox() {
 
   const fetchFeedback = async () => {
     try {
+      console.log('Fetching feedback data...');
       const response = await fetch('/api/feedback');
+      console.log('Raw response:', response);
+      
       const data = await response.json();
+      console.log('Parsed feedback data:', data);
+      
       if (data.error) {
-        console.error(data.error);
+        console.error('Error from server:', data.error);
         alert('Error fetching feedback: ' + data.error);
+      } else if (data.feedbackHistory) {
+        console.log('Setting feedback list:', data.feedbackHistory);
+        setFeedbackList(data.feedbackHistory);
       } else {
-        setFeedbackList(data.feedbackHistory || []);
+        console.warn('Unexpected data format:', data);
+        setFeedbackList([]);
       }
     } catch (error) {
-      console.error('Error fetching feedback:', error);
+      console.error('Error in fetchFeedback:', error);
     }
   };
-  
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
@@ -36,13 +44,21 @@ function AdviceBox() {
             </tr>
           </thead>
           <tbody>
-            {feedbackList.map((feedback) => (
-              <tr key={feedback.id}>
-                <td className="border p-2">{feedback.id}</td>
-                <td className="border p-2">{feedback.employeeName}</td>
-                <td className="border p-2">{feedback.content}</td>
+            {feedbackList.length > 0 ? (
+              feedbackList.map((feedback) => (
+                <tr key={feedback.id}>
+                  <td className="border p-2">{feedback.id}</td>
+                  <td className="border p-2">{feedback.employeeName}</td>
+                  <td className="border p-2">{feedback.content}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="3" className="border p-2 text-center">
+                  No feedback records found
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
