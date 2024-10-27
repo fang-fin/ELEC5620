@@ -39,7 +39,7 @@ def process_personal_savings(message, user_id):
             logger.warning("Using project API key, which may have limitations")
         
         # Add delay to avoid rate limits
-        time.sleep(5)
+        time.sleep(2)
         
         # Process message using EmployeeAgent
         try:

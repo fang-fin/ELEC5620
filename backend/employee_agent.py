@@ -9,6 +9,7 @@ import json
 import logging
 from enum import Enum
 import time
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -104,36 +105,51 @@ class EmployeeAgent:
         """Create feedback submission assistant"""
         feedback_prompt = PromptTemplate(
             input_variables=["current_step", "collected_data"],
-            template="""You are an empathetic feedback assistant who helps employees submit their feedback efficiently.
+            template="""You are an empathetic AI feedback assistant who helps employees express their concerns and suggestions effectively.
 
-            Your role:
-            1. Identify the key points from user's casual comments
-            2. Categorize feedback (work-life balance, workplace environment, management, etc.)
-            3. Structure the feedback professionally
-            4. Confirm with user before submission
+            Your Personality:
+            - Empathetic and understanding
+            - Professional yet friendly
+            - Proactive in identifying underlying concerns
+            - Skilled at structuring casual feedback into actionable insights
 
-            Current feedback data:
+            Current Context:
             {collected_data}
 
-            Current step: {current_step}
+            Current conversation step: {current_step}
 
-            Guidelines:
-            - If user provides vague feedback like "I want better work-life balance", ask ONE brief follow-up question
-            - If you understand the main point, structure it and prepare for submission
-            - If user confirms, respond with: "COMPLETE"
-            - If user wants to exit, respond with: "EXIT"
+            Your Capabilities:
+            1. When receiving initial feedback:
+               - Understand the core message
+               - Identify emotional undertones
+               - Recognize key areas of concern
+               - Reflect back understanding and ask for confirmation
 
-            Example dialogue:
-            User: "I want better work-life balance"
-            Assistant: "I understand you're concerned about work-life balance. Would you like me to submit this feedback focusing on requesting more flexible working hours or reduced overtime?"
-            User: "Yes, flexible hours"
-            Assistant: "I'll submit your feedback requesting better work-life balance through flexible working hours. Should I proceed with the submission?"
+            2. When user confirms:
+               - Respond with "COMPLETE" to trigger submission
+               - Do not include conversation history in your response
 
-            Please respond to the user:"""
+            3. If feedback needs clarification:
+               - Ask specific, relevant questions
+               - Help user articulate their thoughts better
+
+            Response Guidelines:
+            - Respond ONLY with your next message to the user
+            - Do not repeat the conversation history
+            - Keep responses concise and focused
+            - If user confirms, just respond with "COMPLETE"
+            - If user says "exit", just respond with "EXIT"
+
+            Example Responses:
+            - "I understand your concern about work-life balance. Would you like me to submit this feedback?"
+            - "COMPLETE"
+            - "Could you tell me more about how this affects your work?"
+
+            Please provide your next response to the user:"""
         )
         
         return LLMChain(
-            llm=ChatOpenAI(temperature=0.3, model_name="gpt-3.5-turbo"),
+            llm=ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo"),
             prompt=feedback_prompt,
             verbose=True
         )
@@ -169,24 +185,31 @@ class EmployeeAgent:
     def _detect_intent(self, message: str) -> Optional[EmployeeAgentType]:
         """Detect user intent and determine appropriate agent"""
         message_lower = message.lower()
+        logger.info(f"Detecting intent from message: {message}")
         
         if any(term in message_lower for term in ["psychological", "assessment", "evaluation"]):
+            logger.info("Detected intent: PSYCH_ASSESSMENT")
             return EmployeeAgentType.PSYCH_ASSESSMENT
         elif "feedback" in message_lower:
+            logger.info("Detected intent: FEEDBACK")
             return EmployeeAgentType.FEEDBACK
         elif any(term in message_lower for term in ["clock", "time", "hours"]):
+            logger.info("Detected intent: CLOCKIN")
             return EmployeeAgentType.CLOCKIN
             
+        logger.info("No specific intent detected, staying with MAIN agent")
         return None
 
     def _handle_agent_switch(self, target_agent: EmployeeAgentType) -> str:
         """Handle switching between agents"""
+        logger.info(f"Switching agent from {self.current_agent} to {target_agent}")
         self.current_agent = target_agent
         self.conversation_state = {
             "current_flow": target_agent.value,
             "collected_data": {},
             "last_response": None
         }
+        logger.info(f"Conversation state reset for new agent: {target_agent}")
         
         # Welcome messages for each agent
         welcome_messages = {
@@ -195,24 +218,39 @@ class EmployeeAgent:
             EmployeeAgentType.CLOCKIN: "I'll help analyze your clock-in records. Would you like to see your work duration patterns or project time allocation?"
         }
         
-        return welcome_messages.get(target_agent, "How can I assist you?")
+        message = welcome_messages.get(target_agent, "How can I assist you?")
+        logger.info(f"Sending welcome message for {target_agent}: {message}")
+        return message
 
     def _call_api(self, agent_type: EmployeeAgentType, data: Dict[str, Any]) -> Dict[str, Any]:
         """Call appropriate API based on agent type"""
-        api_endpoints = {
-            EmployeeAgentType.PSYCH_ASSESSMENT: "/api/psychological-assessments",
-            EmployeeAgentType.FEEDBACK: "/api/feedback",
-            EmployeeAgentType.CLOCKIN: "/api/clock-in-records"
-        }
-        
         try:
+            # Define API endpoints for different agent types
+            api_endpoints = {
+                EmployeeAgentType.PSYCH_ASSESSMENT: "http://localhost:5000/api/psychological-assessments",
+                EmployeeAgentType.FEEDBACK: "http://localhost:5000/api/feedback",
+                EmployeeAgentType.CLOCKIN: "http://localhost:5000/api/clock-in"
+            }
+            
+            api_endpoint = api_endpoints.get(agent_type)
+            if not api_endpoint:
+                raise ValueError(f"No API endpoint defined for agent type: {agent_type}")
+                
+            logger.info(f"Calling API: {api_endpoint}")
+            logger.info(f"With data: {data}")
+            
             response = requests.post(
-                api_endpoints[agent_type],
+                api_endpoint,
                 json=data,
                 headers={"Content-Type": "application/json"}
             )
+            
+            logger.info(f"API response status: {response.status_code}")
+            logger.info(f"API response content: {response.json()}")
+            
             response.raise_for_status()
             return response.json()
+            
         except Exception as e:
             logger.error(f"API call failed: {str(e)}")
             raise
@@ -220,50 +258,67 @@ class EmployeeAgent:
     def process_message(self, message: str, user_id: str) -> str:
         """Process user message and manage conversation flow"""
         try:
+            logger.info(f"\n{'='*50}")
+            logger.info(f"Processing message for user {user_id}")
+            logger.info(f"Current agent: {self.current_agent}")
+            logger.info(f"Message: {message}")
+            
             # Check if need to switch agent
             if self.current_agent == EmployeeAgentType.MAIN:
                 intent = self._detect_intent(message)
                 if intent:
+                    logger.info(f"Switching to specialized agent: {intent}")
                     return self._handle_agent_switch(intent)
                 
-                # Use main model for general conversation
+                logger.info("Using main agent for general conversation")
                 response = self.agents[EmployeeAgentType.MAIN].predict(human_input=message)
+                
                 if response.startswith("SWITCH_TO:"):
                     target_agent = EmployeeAgentType[response.split(":")[1]]
+                    logger.info(f"Main agent suggested switch to: {target_agent}")
                     return self._handle_agent_switch(target_agent)
                 return response
             
             # Handle specialized agent conversations
+            logger.info(f"Processing with specialized agent: {self.current_agent}")
             agent_chain = self.agents[self.current_agent]
             current_state = self.conversation_state
             
             # Check for exit command
             if "exit" in message.lower():
+                logger.info("Exit command detected, returning to main agent")
                 self.current_agent = EmployeeAgentType.MAIN
                 return "Exited current function. How else can I help you?"
             
             # Process message with current specialized agent
+            logger.info("Current conversation state:")
+            logger.info(f"Flow: {current_state.get('current_flow')}")
+            logger.info(f"Collected data: {current_state.get('collected_data')}")
+            
             response = agent_chain.predict(
                 current_step=current_state.get("current_flow"),
                 collected_data=json.dumps(current_state.get("collected_data"), ensure_ascii=False)
             )
             
+            logger.info(f"Agent response: {response}")
+            
             # Handle completion of specialized task
             if response == "COMPLETE":
+                logger.info("Task completion detected, preparing API call")
                 try:
-                    # Prepare data for API call
                     api_data = {
                         "userId": user_id,
                         **current_state["collected_data"]
                     }
+                    logger.info(f"Calling API for {self.current_agent} with data: {api_data}")
                     
-                    # Call appropriate API
                     api_response = self._call_api(
                         self.current_agent,
                         api_data
                     )
                     
-                    # Reset to main agent
+                    logger.info(f"API response: {api_response}")
+                    logger.info("Returning to main agent")
                     self.current_agent = EmployeeAgentType.MAIN
                     return f"Task completed successfully! {api_response.get('message', '')}"
                     
@@ -271,25 +326,57 @@ class EmployeeAgent:
                     logger.error(f"API call failed: {str(e)}")
                     return "Sorry, there was an error processing your request. Please try again."
             
-            # Update conversation state
+            # Update conversation state based on agent type
+            logger.info(f"Updating conversation state for {self.current_agent}")
             if self.current_agent == EmployeeAgentType.PSYCH_ASSESSMENT:
                 # Store answers for psychological assessment
                 if "Q1:" in response:
                     current_state["collected_data"]["q1"] = message
+                    logger.info("Stored Q1 response")
                 elif "Q2:" in response:
                     current_state["collected_data"]["q2"] = message
+                    logger.info("Stored Q2 response")
                 elif "Q3:" in response:
                     current_state["collected_data"]["q3"] = message
+                    logger.info("Stored Q3 response")
             
             elif self.current_agent == EmployeeAgentType.FEEDBACK:
-                # Store feedback content
-                current_state["collected_data"]["content"] = message
+                # if user confirms feedback submission
+                if message.lower() in ['yes', 'confirm', 'agree', "that's exactly it"]:
+                    logger.info("User confirmed feedback submission")
+                    # prepare API call data
+                    api_data = {
+                        "userId": user_id,
+                        "content": current_state["collected_data"].get("content", ""),
+                        "timestamp": datetime.now().isoformat()
+                    }
+                    
+                    try:
+                        logger.info(f"Calling feedback API with data: {api_data}")
+                        api_response = self._call_api(
+                            self.current_agent,
+                            api_data
+                        )
+                        logger.info(f"Feedback API response: {api_response}")
+                        
+                        # reset state and return to main conversation
+                        self.current_agent = EmployeeAgentType.MAIN
+                        return f"Feedback submitted successfully! {api_response.get('message', '')}"
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to submit feedback: {e}")
+                        return "Sorry, there was an error submitting your feedback. Please try again."
+                else:
+                    # store feedback content
+                    current_state["collected_data"]["content"] = message
+                    logger.info(f"Stored feedback content: {message}")
             
             elif self.current_agent == EmployeeAgentType.CLOCKIN:
-                # Store clock-in analysis request
                 current_state["collected_data"]["analysis_request"] = message
+                logger.info("Stored clock-in analysis request")
             
             self.conversation_state["last_response"] = response
+            logger.info(f"{'='*50}\n")
             return response
             
         except Exception as e:
